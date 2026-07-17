@@ -14,8 +14,11 @@ generator client {
 
 datasource db {
   provider  = "postgresql"
+  // Nomes das variáveis injetadas pela integração Neon do Vercel:
+  // DATABASE_URL = conexão pooled (runtime/serverless)
+  // DATABASE_URL_UNPOOLED = conexão direta (migrations)
   url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  directUrl = env("DATABASE_URL_UNPOOLED")
 }
 
 model Note {

@@ -73,15 +73,16 @@ Projeto **único** no Vercel:
 - **API** roda como função serverless em `/api/*`, delegando ao app NestJS. Usa o
   **driver adapter da Neon** (sem binário de query engine — ideal para serverless).
 
-Variáveis de ambiente necessárias no Vercel:
+Variáveis de ambiente (injetadas automaticamente pela **integração Neon do Vercel**):
 
-| Variável       | Descrição                                            |
-| -------------- | ---------------------------------------------------- |
-| `DATABASE_URL` | Conexão **pooled** do Neon (host com `-pooler`)      |
-| `DIRECT_URL`   | Conexão **direta** do Neon (para as migrations)      |
-| `WEB_ORIGIN`   | (opcional) origem para CORS — mesma origem em prod   |
+| Variável                | Descrição                                            |
+| ----------------------- | ---------------------------------------------------- |
+| `DATABASE_URL`          | Conexão **pooled** do Neon (host com `-pooler`)      |
+| `DATABASE_URL_UNPOOLED` | Conexão **direta** do Neon (para as migrations)      |
+| `WEB_ORIGIN`            | (opcional) origem para CORS — mesma origem em prod   |
 
-O `vercel-build` roda `prisma migrate deploy` no build, mantendo o banco em sincronia.
+O `vercel-build` roda `prisma migrate deploy` no build, aplicando as migrations do
+diretório `apps/api/prisma/migrations` ao banco.
 
 ## Versionamento e Releases
 
