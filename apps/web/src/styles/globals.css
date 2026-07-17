@@ -1,0 +1,73 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Paleta do DevFlow (spec CLAUDE.md), expressa em HSL para os design tokens.
+ * Background #111827 · Sidebar #1F2937 · Card #374151 · Primary #22C55E
+ * Danger #EF4444 · Warning #F59E0B · Info #3B82F6 · Texto #F9FAFB
+ */
+@layer base {
+  :root {
+    --background: 221 39% 11%;
+    --foreground: 210 20% 98%;
+
+    --sidebar: 215 28% 17%;
+    --sidebar-foreground: 210 20% 98%;
+
+    --card: 217 19% 27%;
+    --card-foreground: 210 20% 98%;
+
+    --popover: 215 28% 17%;
+    --popover-foreground: 210 20% 98%;
+
+    --muted: 215 20% 22%;
+    --muted-foreground: 217 12% 70%;
+
+    --accent: 217 19% 30%;
+    --accent-foreground: 210 20% 98%;
+
+    --primary: 142 71% 45%;
+    --primary-foreground: 210 20% 98%;
+
+    --danger: 0 84% 60%;
+    --danger-foreground: 210 20% 98%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 221 39% 11%;
+
+    --info: 217 91% 60%;
+    --info-foreground: 210 20% 98%;
+
+    --border: 215 20% 30%;
+    --input: 215 20% 30%;
+    --ring: 142 71% 45%;
+
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family:
+      ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica,
+      Arial, sans-serif;
+  }
+
+  /* Scrollbar discreta combinando com o tema escuro. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted)) transparent;
+  }
+}

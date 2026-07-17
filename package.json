@@ -1,0 +1,31 @@
+{
+  "name": "devflow",
+  "version": "0.0.1",
+  "private": true,
+  "description": "DevFlow — Programming Study & Project Manager",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -n api,web -c green,cyan \"npm run dev -w @devflow/api\" \"npm run dev -w @devflow/web\"",
+    "build": "npm run build -w @devflow/shared && npm run build -w @devflow/api && npm run build -w @devflow/web",
+    "vercel-build": "npm run db:generate -w @devflow/api && npm run build -w @devflow/shared && npm run build -w @devflow/api && npm run db:deploy -w @devflow/api && npm run build -w @devflow/web",
+    "lint": "npm run lint -w @devflow/api && npm run lint -w @devflow/web",
+    "db:migrate": "npm run db:migrate -w @devflow/api",
+    "db:deploy": "npm run db:deploy -w @devflow/api",
+    "db:generate": "npm run db:generate -w @devflow/api",
+    "release:patch": "npm version patch && git push --follow-tags",
+    "release:minor": "npm version minor && git push --follow-tags",
+    "release:major": "npm version major && git push --follow-tags"
+  },
+  "config": {
+    "tag-version-prefix": "v"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

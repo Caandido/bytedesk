@@ -1,0 +1,74 @@
+import { createBrowserRouter } from 'react-router-dom';
+import { AppLayout } from '@/layouts/AppLayout';
+import { DashboardPage } from '@/pages/DashboardPage';
+import { PlaceholderPage } from '@/pages/PlaceholderPage';
+import { NotFoundPage } from '@/pages/NotFoundPage';
+
+/**
+ * Roteador da aplicação. O Dashboard já é real (prova de integração); os demais
+ * módulos usam páginas placeholder até serem implementados.
+ */
+export const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <AppLayout />,
+    children: [
+      { index: true, element: <DashboardPage /> },
+      {
+        path: 'estudos',
+        element: (
+          <PlaceholderPage
+            title="Estudos"
+            description="Organize seus estudos com objetivos, checklist e anotações."
+          />
+        ),
+      },
+      {
+        path: 'roadmaps',
+        element: (
+          <PlaceholderPage
+            title="Roadmaps"
+            description="Trilhas de aprendizado com progresso e recursos."
+          />
+        ),
+      },
+      {
+        path: 'projetos',
+        element: (
+          <PlaceholderPage
+            title="Projetos"
+            description="Gerencie projetos com tarefas, bugs, versões e documentação."
+          />
+        ),
+      },
+      {
+        path: 'conhecimento',
+        element: (
+          <PlaceholderPage
+            title="Conhecimento"
+            description="Sua wiki pessoal de programação."
+          />
+        ),
+      },
+      {
+        path: 'estatisticas',
+        element: (
+          <PlaceholderPage
+            title="Estatísticas"
+            description="Métricas de produtividade e progresso."
+          />
+        ),
+      },
+      {
+        path: 'git',
+        element: (
+          <PlaceholderPage
+            title="Git"
+            description="Informações de repositório, branches e versões."
+          />
+        ),
+      },
+      { path: '*', element: <NotFoundPage /> },
+    ],
+  },
+]);

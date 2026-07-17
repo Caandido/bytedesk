@@ -1,0 +1,29 @@
+// Prisma schema — DevFlow
+//
+// Banco: PostgreSQL (Neon). Em produção (Vercel serverless) usamos o driver adapter
+// da Neon (@prisma/adapter-neon), que dispensa o binário do query engine e conecta
+// via WebSocket — ideal para funções serverless. Ver src/prisma/prisma.service.ts.
+//
+// Por enquanto contém apenas a entidade-exemplo `Note`. Os modelos reais (Study,
+// Project, Bug, Roadmap, ...) serão adicionados conforme os módulos forem
+// implementados. Toda entidade segue a convenção de auditoria: createdAt/updatedAt.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Note {
+  id        String   @id @default(cuid())
+  title     String
+  content   String   @default("")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("notes")
+}
