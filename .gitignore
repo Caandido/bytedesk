@@ -32,3 +32,5 @@ apps/api/generated/
 
 # Vercel
 .vercel/
+
+.vercel
