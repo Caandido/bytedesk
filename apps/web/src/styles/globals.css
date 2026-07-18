@@ -3,47 +3,47 @@
 @tailwind utilities;
 
 /*
- * Paleta do DevFlow (spec CLAUDE.md), expressa em HSL para os design tokens.
- * Background #111827 · Sidebar #1F2937 · Card #374151 · Primary #22C55E
- * Danger #EF4444 · Warning #F59E0B · Info #3B82F6 · Texto #F9FAFB
+ * Identidade visual do DevFlow — monocromática (preto & branco).
+ * Fundo quase preto, superfícies em cinzas, texto branco, ação primária branca
+ * (invertida) e vermelho como único acento funcional (ações destrutivas).
  */
 @layer base {
   :root {
-    --background: 221 39% 11%;
-    --foreground: 210 20% 98%;
+    --background: 0 0% 4%;
+    --foreground: 0 0% 98%;
 
-    --sidebar: 215 28% 17%;
-    --sidebar-foreground: 210 20% 98%;
+    --sidebar: 0 0% 6%;
+    --sidebar-foreground: 0 0% 64%;
 
-    --card: 217 19% 27%;
-    --card-foreground: 210 20% 98%;
+    --card: 0 0% 8.5%;
+    --card-foreground: 0 0% 98%;
 
-    --popover: 215 28% 17%;
-    --popover-foreground: 210 20% 98%;
+    --popover: 0 0% 7%;
+    --popover-foreground: 0 0% 98%;
 
-    --muted: 215 20% 22%;
-    --muted-foreground: 217 12% 70%;
+    --muted: 0 0% 14%;
+    --muted-foreground: 0 0% 56%;
 
-    --accent: 217 19% 30%;
-    --accent-foreground: 210 20% 98%;
+    --accent: 0 0% 15%;
+    --accent-foreground: 0 0% 98%;
 
-    --primary: 142 71% 45%;
-    --primary-foreground: 210 20% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 8%;
 
-    --danger: 0 84% 60%;
-    --danger-foreground: 210 20% 98%;
+    --danger: 0 72% 55%;
+    --danger-foreground: 0 0% 98%;
 
-    --warning: 38 92% 50%;
-    --warning-foreground: 221 39% 11%;
+    --warning: 0 0% 80%;
+    --warning-foreground: 0 0% 8%;
 
-    --info: 217 91% 60%;
-    --info-foreground: 210 20% 98%;
+    --info: 0 0% 52%;
+    --info-foreground: 0 0% 98%;
 
-    --border: 215 20% 30%;
-    --input: 215 20% 30%;
-    --ring: 142 71% 45%;
+    --border: 0 0% 15%;
+    --input: 0 0% 20%;
+    --ring: 0 0% 88%;
 
-    --radius: 0.5rem;
+    --radius: 0.7rem;
   }
 }
 
@@ -63,11 +63,89 @@
     font-family:
       ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica,
       Arial, sans-serif;
+    /* Profundidade sutil: leve clareamento no topo. */
+    background-image: radial-gradient(
+      120% 80% at 50% -10%,
+      hsl(0 0% 12%) 0%,
+      hsl(var(--background)) 55%
+    );
+    background-attachment: fixed;
   }
 
-  /* Scrollbar discreta combinando com o tema escuro. */
+  ::selection {
+    background: hsl(0 0% 92%);
+    color: hsl(0 0% 6%);
+  }
+
+  /* Scrollbar fina monocromática. */
   * {
     scrollbar-width: thin;
-    scrollbar-color: hsl(var(--muted)) transparent;
+    scrollbar-color: hsl(0 0% 22%) transparent;
+  }
+  *::-webkit-scrollbar {
+    width: 9px;
+    height: 9px;
+  }
+  *::-webkit-scrollbar-thumb {
+    background: hsl(0 0% 20%);
+    border: 2px solid transparent;
+    border-radius: 9999px;
+    background-clip: content-box;
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background: hsl(0 0% 32%);
+    background-clip: content-box;
+  }
+
+  /* Foco visível e elegante. */
+  :focus-visible {
+    outline: none;
+  }
+}
+
+@layer utilities {
+  /* Entrada suave (usada nas transições de página e listas). */
+  .animate-in-up {
+    animation: in-up 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  .animate-in-fade {
+    animation: in-fade 0.4s ease both;
+  }
+
+  /* Traço do logo desenhando na montagem. */
+  .logo-draw {
+    stroke-dasharray: 44;
+    stroke-dashoffset: 44;
+    animation: logo-draw 1s ease 0.15s forwards;
+  }
+  .logo-dot {
+    opacity: 0;
+    animation: in-fade 0.4s ease 0.9s forwards;
+  }
+}
+
+@keyframes in-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes in-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes logo-draw {
+  to {
+    stroke-dashoffset: 0;
   }
 }

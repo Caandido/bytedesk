@@ -133,7 +133,7 @@ export function RoadmapGuidePage() {
         <div className="space-y-2">
           <RoadmapMindmap template={t} />
           <p className="text-center text-xs text-muted-foreground">
-            Nós em verde têm roadmap dedicado — clique para navegar.
+            Nós em destaque (branco) têm roadmap dedicado — clique para navegar.
           </p>
         </div>
       )}

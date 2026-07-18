@@ -25,10 +25,10 @@ function buildGraph(template: RoadmapTemplateDetail): string {
     prev = id;
   });
   lines.push(
-    '  classDef root fill:#22C55E,stroke:#16A34A,color:#052e16,font-weight:bold',
+    '  classDef root fill:#FAFAFA,stroke:#FAFAFA,color:#0A0A0A,font-weight:bold',
   );
   lines.push(
-    '  classDef linked fill:#14532d,stroke:#22C55E,color:#F9FAFB,stroke-width:2px',
+    '  classDef linked fill:#1f1f1f,stroke:#FAFAFA,color:#FAFAFA,stroke-width:2px',
   );
   return lines.join('\n');
 }
