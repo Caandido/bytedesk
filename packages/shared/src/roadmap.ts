@@ -71,3 +71,21 @@ export const roadmapSchema = z
 export type CreateRoadmapInput = z.input<typeof createRoadmapSchema>;
 export type UpdateRoadmapInput = z.input<typeof updateRoadmapSchema>;
 export type Roadmap = z.infer<typeof roadmapSchema>;
+
+// ─── Catálogo (importar de roadmap.sh) ───────────────────────────────────────
+
+/** Resumo de um template do catálogo, para listar antes de importar. */
+export const roadmapTemplateSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  category: z.string(),
+  description: z.string(),
+  itemCount: z.number().int(),
+});
+export type RoadmapTemplateSummary = z.infer<typeof roadmapTemplateSchema>;
+
+/** Payload para importar um template do catálogo. */
+export const importRoadmapSchema = z.object({
+  templateId: z.string().min(1),
+});
+export type ImportRoadmapInput = z.input<typeof importRoadmapSchema>;

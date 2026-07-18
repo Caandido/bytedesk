@@ -37,6 +37,23 @@ export function useCreateRoadmap() {
   });
 }
 
+/** Catálogo de templates (roadmap.sh curado). */
+export function useRoadmapTemplates() {
+  return useQuery({
+    queryKey: ['roadmap-templates'],
+    queryFn: roadmapsApi.templates,
+    staleTime: Infinity,
+  });
+}
+
+export function useImportRoadmap() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (templateId: string) => roadmapsApi.import(templateId),
+    onSuccess: () => qc.invalidateQueries({ queryKey: roadmapsKeys.all }),
+  });
+}
+
 export function useUpdateRoadmap(id: string) {
   const qc = useQueryClient();
   return useMutation({

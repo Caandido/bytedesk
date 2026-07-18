@@ -2,6 +2,7 @@ import { apiFetch } from '@/services/api';
 import type {
   Roadmap,
   RoadmapItem,
+  RoadmapTemplateSummary,
   CreateRoadmapInput,
   UpdateRoadmapInput,
   CreateRoadmapItemInput,
@@ -11,6 +12,15 @@ import type {
 /** Service da feature Roadmaps. Reusa `apiFetch`. */
 export const roadmapsApi = {
   list: () => apiFetch<Roadmap[]>('/roadmaps'),
+
+  templates: () =>
+    apiFetch<RoadmapTemplateSummary[]>('/roadmaps/templates'),
+
+  import: (templateId: string) =>
+    apiFetch<Roadmap>('/roadmaps/import', {
+      method: 'POST',
+      body: JSON.stringify({ templateId }),
+    }),
 
   byId: (id: string) => apiFetch<Roadmap>(`/roadmaps/${id}`),
 

@@ -1,6 +1,14 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Search, Trash2, Loader2, Map, ListChecks } from 'lucide-react';
+import {
+  Plus,
+  Search,
+  Trash2,
+  Loader2,
+  Map,
+  ListChecks,
+  Download,
+} from 'lucide-react';
 import type { Roadmap } from '@devflow/shared';
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
@@ -8,6 +16,7 @@ import { Button, buttonVariants } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { ImportRoadmapDialog } from '@/features/roadmaps/ImportRoadmapDialog';
 import { useRoadmaps, useDeleteRoadmap } from '@/features/roadmaps/useRoadmaps';
 
 type SortKey = 'recent' | 'name' | 'progress';
@@ -20,6 +29,7 @@ export function RoadmapsPage() {
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('ALL');
   const [sort, setSort] = useState<SortKey>('recent');
+  const [importOpen, setImportOpen] = useState(false);
 
   const categories = useMemo(() => {
     const set = new Set<string>();
@@ -75,10 +85,20 @@ export function RoadmapsPage() {
             Trilhas de aprendizado com itens, recursos e progresso.
           </p>
         </div>
-        <Link to="/roadmaps/novo" className={cn(buttonVariants(), 'shrink-0')}>
-          <Plus className="size-4" /> Novo roadmap
-        </Link>
+        <div className="flex shrink-0 gap-2">
+          <Button variant="outline" onClick={() => setImportOpen(true)}>
+            <Download className="size-4" /> Importar
+          </Button>
+          <Link to="/roadmaps/novo" className={cn(buttonVariants())}>
+            <Plus className="size-4" /> Novo roadmap
+          </Link>
+        </div>
       </div>
+
+      <ImportRoadmapDialog
+        open={importOpen}
+        onClose={() => setImportOpen(false)}
+      />
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <div className="relative flex-1">

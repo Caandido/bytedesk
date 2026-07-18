@@ -7,6 +7,7 @@ import {
   CreateRoadmapItemDto,
   UpdateRoadmapItemDto,
 } from './dto/roadmap.dto';
+import { ROADMAP_CATALOG } from './roadmap-catalog';
 
 /** Sempre trazemos os itens ordenados junto da trilha. */
 const roadmapInclude = {
@@ -55,6 +56,41 @@ export class RoadmapsService {
   async remove(id: string) {
     await this.ensureRoadmap(id);
     return this.prisma.roadmap.delete({ where: { id } });
+  }
+
+  // ─── Catálogo (importar de roadmap.sh) ─────────────────────────────────────
+
+  /** Lista os templates disponíveis (resumo, sem os itens). */
+  listTemplates() {
+    return ROADMAP_CATALOG.map((t) => ({
+      id: t.id,
+      name: t.name,
+      category: t.category,
+      description: t.description,
+      itemCount: t.items.length,
+    }));
+  }
+
+  /** Cria uma trilha a partir de um template do catálogo (com seus itens). */
+  async importTemplate(templateId: string) {
+    const template = ROADMAP_CATALOG.find((t) => t.id === templateId);
+    if (!template) {
+      throw new NotFoundException(`Template ${templateId} não encontrado`);
+    }
+    return this.prisma.roadmap.create({
+      data: {
+        name: template.name,
+        description: template.description,
+        category: template.category,
+        items: {
+          create: template.items.map((title, position) => ({
+            title,
+            position,
+          })),
+        },
+      },
+      include: roadmapInclude,
+    });
   }
 
   // ─── Itens ─────────────────────────────────────────────────────────────────

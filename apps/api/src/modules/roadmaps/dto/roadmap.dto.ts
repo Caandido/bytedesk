@@ -4,6 +4,7 @@ import {
   updateRoadmapSchema,
   createRoadmapItemSchema,
   updateRoadmapItemSchema,
+  importRoadmapSchema,
 } from '@devflow/shared';
 
 /** DTOs do módulo Roadmaps derivados dos schemas Zod compartilhados. */
@@ -15,3 +16,4 @@ export class CreateRoadmapItemDto extends createZodDto(
 export class UpdateRoadmapItemDto extends createZodDto(
   updateRoadmapItemSchema,
 ) {}
+export class ImportRoadmapDto extends createZodDto(importRoadmapSchema) {}

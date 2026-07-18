@@ -13,6 +13,7 @@ import {
   UpdateRoadmapDto,
   CreateRoadmapItemDto,
   UpdateRoadmapItemDto,
+  ImportRoadmapDto,
 } from './dto/roadmap.dto';
 
 /**
@@ -26,6 +27,17 @@ export class RoadmapsController {
   @Get()
   findAll() {
     return this.roadmapsService.findAll();
+  }
+
+  // Rotas estáticas antes de `:id` para não serem capturadas pelo parâmetro.
+  @Get('templates')
+  listTemplates() {
+    return this.roadmapsService.listTemplates();
+  }
+
+  @Post('import')
+  importTemplate(@Body() dto: ImportRoadmapDto) {
+    return this.roadmapsService.importTemplate(dto.templateId);
   }
 
   @Get(':id')
