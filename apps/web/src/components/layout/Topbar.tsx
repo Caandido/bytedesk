@@ -1,6 +1,7 @@
 import { Search } from 'lucide-react';
 import { useUIStore } from '@/stores/ui';
 import { PomodoroWidget } from '@/features/pomodoro/PomodoroWidget';
+import { ThemeToggle } from '@/features/theme/ThemeToggle';
 
 /** Barra superior com a Pesquisa Global (Ctrl+K) e o Pomodoro. */
 export function Topbar() {
@@ -20,8 +21,9 @@ export function Topbar() {
         </kbd>
       </button>
 
-      <div className="ml-auto">
+      <div className="ml-auto flex items-center gap-2">
         <PomodoroWidget />
+        <ThemeToggle />
       </div>
     </header>
   );

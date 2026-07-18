@@ -3,12 +3,60 @@
 @tailwind utilities;
 
 /*
- * Identidade visual do DevFlow — monocromática (preto & branco).
- * Fundo quase preto, superfícies em cinzas, texto branco, ação primária branca
- * (invertida) e vermelho como único acento funcional (ações destrutivas).
+ * Identidade visual do DevFlow — monocromática (preto & branco), com modo claro
+ * e escuro. Ação primária invertida (contraste máximo) e vermelho como único
+ * acento funcional (destrutivo). `:root` = claro; `.dark` = escuro.
  */
 @layer base {
   :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 9%;
+
+    --sidebar: 0 0% 98%;
+    --sidebar-foreground: 0 0% 40%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 9%;
+
+    --muted: 0 0% 95%;
+    --muted-foreground: 0 0% 40%;
+
+    --accent: 0 0% 93%;
+    --accent-foreground: 0 0% 9%;
+
+    --primary: 0 0% 9%;
+    --primary-foreground: 0 0% 98%;
+
+    --danger: 0 72% 48%;
+    --danger-foreground: 0 0% 98%;
+
+    --warning: 0 0% 38%;
+    --warning-foreground: 0 0% 98%;
+
+    --info: 0 0% 46%;
+    --info-foreground: 0 0% 98%;
+
+    --border: 0 0% 89%;
+    --input: 0 0% 85%;
+    --ring: 0 0% 15%;
+
+    --radius: 0.7rem;
+
+    --bg-gradient: radial-gradient(
+      120% 80% at 50% -10%,
+      hsl(0 0% 100%) 0%,
+      hsl(0 0% 96%) 60%
+    );
+    --scrollbar-thumb: 0 0% 80%;
+    --scrollbar-thumb-hover: 0 0% 65%;
+    --selection-bg: 0 0% 10%;
+    --selection-fg: 0 0% 98%;
+  }
+
+  .dark {
     --background: 0 0% 4%;
     --foreground: 0 0% 98%;
 
@@ -43,7 +91,15 @@
     --input: 0 0% 20%;
     --ring: 0 0% 88%;
 
-    --radius: 0.7rem;
+    --bg-gradient: radial-gradient(
+      120% 80% at 50% -10%,
+      hsl(0 0% 12%) 0%,
+      hsl(0 0% 4%) 55%
+    );
+    --scrollbar-thumb: 0 0% 20%;
+    --scrollbar-thumb-hover: 0 0% 32%;
+    --selection-bg: 0 0% 92%;
+    --selection-fg: 0 0% 6%;
   }
 }
 
@@ -63,48 +119,50 @@
     font-family:
       ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica,
       Arial, sans-serif;
-    /* Profundidade sutil: leve clareamento no topo. */
-    background-image: radial-gradient(
-      120% 80% at 50% -10%,
-      hsl(0 0% 12%) 0%,
-      hsl(var(--background)) 55%
-    );
+    background-image: var(--bg-gradient);
     background-attachment: fixed;
   }
 
   ::selection {
-    background: hsl(0 0% 92%);
-    color: hsl(0 0% 6%);
+    background: hsl(var(--selection-bg));
+    color: hsl(var(--selection-fg));
   }
 
-  /* Scrollbar fina monocromática. */
+  /* Transição suave ao trocar de tema. */
+  html.theme-transition,
+  html.theme-transition * {
+    transition:
+      background-color 0.3s ease,
+      border-color 0.3s ease,
+      color 0.3s ease !important;
+  }
+
+  /* Scrollbar fina monocromática (segue o tema). */
   * {
     scrollbar-width: thin;
-    scrollbar-color: hsl(0 0% 22%) transparent;
+    scrollbar-color: hsl(var(--scrollbar-thumb)) transparent;
   }
   *::-webkit-scrollbar {
     width: 9px;
     height: 9px;
   }
   *::-webkit-scrollbar-thumb {
-    background: hsl(0 0% 20%);
+    background: hsl(var(--scrollbar-thumb));
     border: 2px solid transparent;
     border-radius: 9999px;
     background-clip: content-box;
   }
   *::-webkit-scrollbar-thumb:hover {
-    background: hsl(0 0% 32%);
+    background: hsl(var(--scrollbar-thumb-hover));
     background-clip: content-box;
   }
 
-  /* Foco visível e elegante. */
   :focus-visible {
     outline: none;
   }
 }
 
 @layer utilities {
-  /* Entrada suave (usada nas transições de página e listas). */
   .animate-in-up {
     animation: in-up 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
@@ -112,7 +170,6 @@
     animation: in-fade 0.4s ease both;
   }
 
-  /* Traço do logo desenhando na montagem. */
   .logo-draw {
     stroke-dasharray: 44;
     stroke-dashoffset: 44;
