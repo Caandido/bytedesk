@@ -112,6 +112,9 @@ const ErrosPage = lazy(() =>
 const FavoritosPage = lazy(() =>
   import('@/pages/FavoritosPage').then((m) => ({ default: m.FavoritosPage })),
 );
+const CalendarioPage = lazy(() =>
+  import('@/pages/CalendarioPage').then((m) => ({ default: m.CalendarioPage })),
+);
 const NotFoundPage = lazy(() =>
   import('@/pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage })),
 );
@@ -151,6 +154,7 @@ export const router = createBrowserRouter([
       { path: 'conhecimento', element: <ConhecimentoPage /> },
       { path: 'erros', element: <ErrosPage /> },
       { path: 'diario', element: <DiarioPage /> },
+      { path: 'calendario', element: <CalendarioPage /> },
       { path: 'estatisticas', element: <EstatisticasPage /> },
       { path: 'git', element: <GitPage /> },
       { path: '*', element: <NotFoundPage /> },

@@ -7,6 +7,7 @@ import {
   BookOpen,
   NotebookPen,
   Bug,
+  CalendarDays,
   BarChart3,
   GitBranch,
   type LucideIcon,
@@ -32,6 +33,7 @@ export const navItems: NavItem[] = [
   { label: 'Conhecimento', path: '/conhecimento', icon: BookOpen },
   { label: 'Banco de Erros', path: '/erros', icon: Bug },
   { label: 'Diário', path: '/diario', icon: NotebookPen },
+  { label: 'Calendário', path: '/calendario', icon: CalendarDays },
   { label: 'Estatísticas', path: '/estatisticas', icon: BarChart3 },
   { label: 'Git', path: '/git', icon: GitBranch },
 ];
