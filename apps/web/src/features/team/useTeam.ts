@@ -38,6 +38,56 @@ export function useCreateWorkspace() {
   });
 }
 
+export function useRenameWorkspace() {
+  const addWorkspace = useAuthStore((s) => s.addWorkspace);
+  return useMutation({
+    mutationFn: (input: CreateWorkspaceInput) => teamApi.renameWorkspace(input),
+    onSuccess: (workspace) => addWorkspace(workspace, false),
+  });
+}
+
+export function useDeleteWorkspace() {
+  const removeWorkspace = useAuthStore((s) => s.removeWorkspace);
+  return useMutation({
+    mutationFn: () => teamApi.deleteWorkspace(),
+    onSuccess: () => {
+      const activeId = useAuthStore.getState().activeWorkspaceId;
+      if (activeId) removeWorkspace(activeId);
+    },
+  });
+}
+
+export function useLeaveWorkspace() {
+  const removeWorkspace = useAuthStore((s) => s.removeWorkspace);
+  return useMutation({
+    mutationFn: () => teamApi.leaveWorkspace(),
+    onSuccess: () => {
+      const activeId = useAuthStore.getState().activeWorkspaceId;
+      if (activeId) removeWorkspace(activeId);
+    },
+  });
+}
+
+export function useTransferOwnership() {
+  const qc = useQueryClient();
+  const addWorkspace = useAuthStore((s) => s.addWorkspace);
+  const keys = useKeys();
+  return useMutation({
+    mutationFn: (userId: string) => teamApi.transferOwnership(userId),
+    onSuccess: (_data, userId) => {
+      // Quem transferiu vira ADMIN; atualiza o papel local do workspace ativo.
+      const state = useAuthStore.getState();
+      const active = state.workspaces.find(
+        (w) => w.id === state.activeWorkspaceId,
+      );
+      if (active) {
+        addWorkspace({ ...active, ownerId: userId, role: 'ADMIN' }, false);
+      }
+      qc.invalidateQueries({ queryKey: keys.members });
+    },
+  });
+}
+
 export function useUpdateMember() {
   const qc = useQueryClient();
   const keys = useKeys();

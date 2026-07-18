@@ -587,10 +587,16 @@ model RoadmapItem {
   done            Boolean @default(false)
   position        Int     @default(0)
 
+  // Sub-itens (aninhamento de 1 nível, estilo roadmap.sh). Nulo = tópico raiz.
+  parentId String?
+  parent   RoadmapItem?  @relation("RoadmapItemChildren", fields: [parentId], references: [id], onDelete: Cascade)
+  children RoadmapItem[] @relation("RoadmapItemChildren")
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([roadmapId])
+  @@index([parentId])
   @@map("roadmap_items")
 }
 

@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, type FormEvent } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Loader2,
   UserPlus,
@@ -10,6 +11,10 @@ import {
   Copy,
   Check,
   X,
+  Mail,
+  LogOut,
+  ArrowRightLeft,
+  Settings,
 } from 'lucide-react';
 import type { MembershipRole, WorkspaceMember } from '@devflow/shared';
 import { useAuthStore } from '@/stores/auth';
@@ -25,6 +30,10 @@ import {
   useRemoveMember,
   useCreateInvite,
   useRevokeInvite,
+  useRenameWorkspace,
+  useDeleteWorkspace,
+  useLeaveWorkspace,
+  useTransferOwnership,
 } from '@/features/team/useTeam';
 
 const ROLE_LABEL: Record<MembershipRole, string> = {
@@ -39,13 +48,14 @@ function RoleIcon({ role }: { role: MembershipRole }) {
   return <UserIcon className="size-3.5" />;
 }
 
-/** Gestão de membros do workspace ativo: papéis, remoção e convites por link. */
+/** Gestão de membros do workspace ativo: papéis, convites e configurações. */
 export function MembersPage() {
   const user = useAuthStore((s) => s.user);
   const workspaces = useAuthStore((s) => s.workspaces);
   const activeId = useAuthStore((s) => s.activeWorkspaceId);
   const active = workspaces.find((w) => w.id === activeId);
-  const canManage = active?.role === 'OWNER' || active?.role === 'ADMIN';
+  const isOwner = active?.role === 'OWNER';
+  const canManage = isOwner || active?.role === 'ADMIN';
 
   const members = useMembers();
 
@@ -84,11 +94,14 @@ export function MembersPage() {
               key={m.userId}
               member={m}
               canManage={canManage}
+              isOwnerViewer={isOwner}
               isSelf={m.userId === user?.id}
             />
           ))}
         </CardContent>
       </Card>
+
+      <WorkspaceSettings isOwner={isOwner} name={active?.name ?? ''} />
     </div>
   );
 }
@@ -96,15 +109,19 @@ export function MembersPage() {
 function MemberRow({
   member,
   canManage,
+  isOwnerViewer,
   isSelf,
 }: {
   member: WorkspaceMember;
   canManage: boolean;
+  isOwnerViewer: boolean;
   isSelf: boolean;
 }) {
   const updateMember = useUpdateMember();
   const removeMember = useRemoveMember();
+  const transfer = useTransferOwnership();
   const editable = canManage && !member.isOwner && !isSelf;
+  const canTransfer = isOwnerViewer && !member.isOwner && !isSelf;
 
   return (
     <div className="flex items-center gap-3 rounded-md border border-border p-3">
@@ -141,6 +158,28 @@ function MemberRow({
           <RoleIcon role={member.role} />
           {ROLE_LABEL[member.role]}
         </Badge>
+      )}
+
+      {canTransfer && (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-8"
+          title="Tornar dono"
+          aria-label={`Transferir propriedade para ${member.name}`}
+          disabled={transfer.isPending}
+          onClick={() => {
+            if (
+              window.confirm(
+                `Transferir a propriedade do workspace para ${member.name}? Você passará a Admin.`,
+              )
+            ) {
+              transfer.mutate(member.userId);
+            }
+          }}
+        >
+          <ArrowRightLeft className="size-4" />
+        </Button>
       )}
 
       {editable && (
@@ -180,6 +219,15 @@ function InviteSection() {
     window.setTimeout(() => setCopied(null), 1800);
   };
 
+  const mailto = (token: string, to: string) => {
+    const link = linkFor(token);
+    const subject = encodeURIComponent('Convite para o DevFlow');
+    const body = encodeURIComponent(
+      `Você foi convidado para colaborar no DevFlow.\n\nAbra o link para entrar:\n${link}\n`,
+    );
+    window.location.href = `mailto:${to}?subject=${subject}&body=${body}`;
+  };
+
   const handleCreate = () => {
     createInvite.mutate(
       { email: email.trim() || undefined, role },
@@ -205,7 +253,7 @@ function InviteSection() {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="E-mail (opcional, só como referência)"
+            placeholder="E-mail (opcional)"
             className="flex-1"
           />
           <Select
@@ -250,6 +298,16 @@ function InviteSection() {
                 </span>
                 <Button
                   variant="ghost"
+                  size="icon"
+                  className="size-7"
+                  title="Enviar por e-mail"
+                  aria-label="Enviar convite por e-mail"
+                  onClick={() => mailto(inv.token, inv.email)}
+                >
+                  <Mail className="size-4" />
+                </Button>
+                <Button
+                  variant="ghost"
                   size="sm"
                   className="h-7"
                   onClick={() => copy(inv.token)}
@@ -260,7 +318,7 @@ function InviteSection() {
                     </>
                   ) : (
                     <>
-                      <Copy className="size-3.5" /> Copiar link
+                      <Copy className="size-3.5" /> Copiar
                     </>
                   )}
                 </Button>
@@ -278,6 +336,114 @@ function InviteSection() {
             ))}
           </div>
         )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function WorkspaceSettings({
+  isOwner,
+  name,
+}: {
+  isOwner: boolean;
+  name: string;
+}) {
+  const navigate = useNavigate();
+  const rename = useRenameWorkspace();
+  const del = useDeleteWorkspace();
+  const leave = useLeaveWorkspace();
+  const [draft, setDraft] = useState(name);
+
+  const handleRename = (e: FormEvent) => {
+    e.preventDefault();
+    const trimmed = draft.trim();
+    if (!trimmed || trimmed === name) return;
+    rename.mutate({ name: trimmed });
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-base">
+          <Settings className="size-4" /> Configurações
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-5">
+        {isOwner && (
+          <form onSubmit={handleRename} className="space-y-2">
+            <label className="text-sm font-medium">Nome do workspace</label>
+            <div className="flex gap-2">
+              <Input
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                maxLength={120}
+                className="flex-1"
+              />
+              <Button
+                type="submit"
+                variant="outline"
+                disabled={rename.isPending || draft.trim() === name}
+              >
+                {rename.isPending && <Loader2 className="size-4 animate-spin" />}
+                Salvar
+              </Button>
+            </div>
+          </form>
+        )}
+
+        {/* Zona de perigo */}
+        <div className="rounded-lg border border-danger/30 bg-danger/5 p-4">
+          {isOwner ? (
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-sm font-medium">Excluir workspace</p>
+                <p className="text-xs text-muted-foreground">
+                  Apaga o workspace e todos os seus dados. Irreversível.
+                </p>
+              </div>
+              <Button
+                variant="danger"
+                disabled={del.isPending}
+                onClick={() => {
+                  if (
+                    window.confirm(
+                      `Excluir o workspace "${name}" e TODOS os seus dados? Esta ação é irreversível.`,
+                    )
+                  ) {
+                    del.mutate(undefined, { onSuccess: () => navigate('/') });
+                  }
+                }}
+              >
+                <Trash2 className="size-4" /> Excluir
+              </Button>
+            </div>
+          ) : (
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-sm font-medium">Sair do workspace</p>
+                <p className="text-xs text-muted-foreground">
+                  Você perde o acesso a este workspace.
+                </p>
+              </div>
+              <Button
+                variant="danger"
+                disabled={leave.isPending}
+                onClick={() => {
+                  if (window.confirm(`Sair do workspace "${name}"?`)) {
+                    leave.mutate(undefined, { onSuccess: () => navigate('/') });
+                  }
+                }}
+              >
+                <LogOut className="size-4" /> Sair
+              </Button>
+            </div>
+          )}
+          {(del.isError || leave.isError) && (
+            <p className="mt-2 text-sm text-danger">
+              {((del.error ?? leave.error) as Error).message}
+            </p>
+          )}
+        </div>
       </CardContent>
     </Card>
   );

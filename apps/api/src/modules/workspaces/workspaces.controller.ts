@@ -14,6 +14,7 @@ import {
   CreateWorkspaceDto,
   CreateInviteDto,
   UpdateMemberDto,
+  TransferOwnershipDto,
 } from './dto/workspace.dto';
 import { RolesGuard } from './roles.guard';
 import { Roles } from './roles.decorator';
@@ -32,6 +33,39 @@ export class WorkspacesController {
   @Post()
   create(@CurrentUser() userId: string, @Body() dto: CreateWorkspaceDto) {
     return this.workspaces.create(userId, dto);
+  }
+
+  @Patch()
+  @Roles('OWNER')
+  rename(@WorkspaceId() workspaceId: string, @Body() dto: CreateWorkspaceDto) {
+    return this.workspaces.rename(workspaceId, dto);
+  }
+
+  @Delete()
+  @Roles('OWNER')
+  @HttpCode(204)
+  deleteWorkspace(
+    @WorkspaceId() workspaceId: string,
+    @CurrentUser() userId: string,
+  ) {
+    return this.workspaces.deleteWorkspace(workspaceId, userId);
+  }
+
+  @Post('leave')
+  @HttpCode(204)
+  leave(@WorkspaceId() workspaceId: string, @CurrentUser() userId: string) {
+    return this.workspaces.leave(workspaceId, userId);
+  }
+
+  @Post('transfer')
+  @Roles('OWNER')
+  @HttpCode(204)
+  transfer(
+    @WorkspaceId() workspaceId: string,
+    @CurrentUser() userId: string,
+    @Body() dto: TransferOwnershipDto,
+  ) {
+    return this.workspaces.transferOwnership(workspaceId, userId, dto.userId);
   }
 
   @Get('members')

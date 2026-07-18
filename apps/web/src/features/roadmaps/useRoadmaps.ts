@@ -131,13 +131,11 @@ export function useReorderRoadmapItems(roadmapId: string) {
       const prev = qc.getQueryData<Roadmap>(roadmapsKeys.detail(roadmapId));
       qc.setQueryData<Roadmap>(roadmapsKeys.detail(roadmapId), (old) => {
         if (!old?.items) return old;
-        const byId = new Map(old.items.map((i) => [i.id, i]));
-        const items = itemIds
-          .map((id, index) => {
-            const item = byId.get(id);
-            return item ? { ...item, position: index } : null;
-          })
-          .filter((i): i is NonNullable<typeof i> => i !== null);
+        // Reordena só o grupo enviado (irmãos); os demais itens mantêm posição.
+        const orderMap = new Map(itemIds.map((id, index) => [id, index]));
+        const items = old.items.map((i) =>
+          orderMap.has(i.id) ? { ...i, position: orderMap.get(i.id) as number } : i,
+        );
         return { ...old, items };
       });
       return { prev };

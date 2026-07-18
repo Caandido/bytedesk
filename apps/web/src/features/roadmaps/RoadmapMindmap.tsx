@@ -2,26 +2,31 @@ import { type MouseEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MermaidDiagram } from '@/components/MermaidDiagram';
 
-/** Um nó do mapa mental (item de trilha). */
+/** Um nó do mapa mental (item de trilha), podendo ter sub-itens. */
 export interface MindmapNode {
   title: string;
   /** id de outro roadmap do catálogo (cross-link estilo Obsidian). */
   linkTo?: string;
   /** marca visual de concluído (roadmaps do usuário). */
   done?: boolean;
+  /** sub-itens (aninhamento de 1 nível). */
+  children?: MindmapNode[];
 }
 
 /** Sanitiza um rótulo para caber num label do Mermaid entre aspas. */
 const label = (s: string) =>
   s.replace(/"/g, "'").replace(/[[\]{}]/g, '').slice(0, 48);
 
-/** Gera um grafo Mermaid (roadmap vertical) a partir do nome + itens. */
+/**
+ * Gera um grafo Mermaid: espinha vertical dos tópicos raiz (ROOT → T0 → T1 …) com
+ * ramos pontilhados para os sub-itens, no estilo do roadmap.sh.
+ */
 function buildGraph(name: string, items: MindmapNode[]): string {
   const lines = ['graph TD'];
   lines.push(`  ROOT(["${label(name)}"]):::root`);
   let prev = 'ROOT';
   items.forEach((item, i) => {
-    const id = `N${i}`;
+    const id = `T${i}`;
     lines.push(`  ${prev} --> ${id}["${label(item.title)}"]`);
     const classes: string[] = [];
     if (item.linkTo) {
@@ -33,6 +38,15 @@ function buildGraph(name: string, items: MindmapNode[]): string {
     }
     if (item.done) classes.push('done');
     if (classes.length) lines.push(`  class ${id} ${classes.join(',')}`);
+
+    // Sub-itens como ramos laterais (aresta pontilhada).
+    (item.children ?? []).forEach((child, ci) => {
+      const cid = `${id}_${ci}`;
+      lines.push(`  ${id} -.-> ${cid}("${label(child.title)}")`);
+      if (child.done) lines.push(`  class ${cid} done`);
+      else lines.push(`  class ${cid} sub`);
+    });
+
     prev = id;
   });
   lines.push(
@@ -42,6 +56,7 @@ function buildGraph(name: string, items: MindmapNode[]): string {
     '  classDef linked fill:#1f1f1f,stroke:#FAFAFA,color:#FAFAFA,stroke-width:2px',
   );
   lines.push('  classDef done fill:#0A0A0A,stroke:#3F3F3F,color:#8A8A8A');
+  lines.push('  classDef sub fill:#2A2A2A,stroke:#555,color:#E5E5E5');
   return lines.join('\n');
 }
 

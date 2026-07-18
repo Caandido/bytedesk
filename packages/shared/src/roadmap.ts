@@ -9,12 +9,13 @@ import { linkSchema } from './study';
 
 // ─── Item da trilha ──────────────────────────────────────────────────────────
 
-/** Payload para criar um item de trilha. */
+/** Payload para criar um item de trilha (parentId opcional = sub-item). */
 export const createRoadmapItemSchema = z.object({
   title: z.string().trim().min(1, 'O título é obrigatório').max(200),
   description: z.string().max(10_000).optional().default(''),
   links: z.array(linkSchema).optional().default([]),
   recommendedTime: z.string().trim().max(60).optional().default(''),
+  parentId: idSchema.optional(),
 });
 
 /** Payload para atualizar um item (marcar feito, reordenar, editar). */
@@ -36,6 +37,7 @@ export const roadmapItemSchema = z
     recommendedTime: z.string(),
     done: z.boolean(),
     position: z.number().int(),
+    parentId: z.string().nullable(),
   })
   .merge(timestampsSchema);
 

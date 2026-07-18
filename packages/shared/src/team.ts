@@ -10,11 +10,17 @@ import { membershipRoleSchema } from './auth';
 /** Papéis que podem ser atribuídos por convite/edição (OWNER é só o criador). */
 export const assignableRoleSchema = membershipRoleSchema.exclude(['OWNER']);
 
-/** Criar um novo workspace. */
+/** Criar ou renomear um workspace. */
 export const createWorkspaceSchema = z.object({
   name: z.string().trim().min(1, 'O nome é obrigatório').max(120),
 });
 export type CreateWorkspaceInput = z.input<typeof createWorkspaceSchema>;
+
+/** Transferir a propriedade do workspace para outro membro. */
+export const transferOwnershipSchema = z.object({
+  userId: idSchema,
+});
+export type TransferOwnershipInput = z.input<typeof transferOwnershipSchema>;
 
 /** Membro de um workspace (para a tela de gestão). */
 export const workspaceMemberSchema = z.object({

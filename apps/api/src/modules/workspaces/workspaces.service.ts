@@ -105,6 +105,83 @@ export class WorkspacesService {
     });
   }
 
+  /** Renomeia o workspace ativo (OWNER). */
+  async rename(
+    workspaceId: string,
+    dto: CreateWorkspaceDto,
+  ): Promise<Workspace> {
+    await this.getWorkspaceOr404(workspaceId);
+    const updated = await this.prisma.workspace.update({
+      where: { id: workspaceId },
+      data: { name: dto.name },
+    });
+    return this.toWorkspace(updated, 'OWNER');
+  }
+
+  /** Exclui o workspace ativo e TODOS os seus dados (OWNER). Bloqueia o último. */
+  async deleteWorkspace(workspaceId: string, userId: string): Promise<void> {
+    await this.getWorkspaceOr404(workspaceId);
+    const count = await this.prisma.membership.count({ where: { userId } });
+    if (count <= 1) {
+      throw new BadRequestException(
+        'Você não pode excluir seu único workspace',
+      );
+    }
+    await this.prisma.workspace.delete({ where: { id: workspaceId } });
+  }
+
+  /** Sai do workspace (membro não-dono). Bloqueia o dono e o último workspace. */
+  async leave(workspaceId: string, userId: string): Promise<void> {
+    const workspace = await this.getWorkspaceOr404(workspaceId);
+    if (workspace.ownerId === userId) {
+      throw new BadRequestException(
+        'O dono não pode sair — transfira a propriedade ou exclua o workspace',
+      );
+    }
+    const count = await this.prisma.membership.count({ where: { userId } });
+    if (count <= 1) {
+      throw new BadRequestException('Você não pode sair do seu único workspace');
+    }
+    await this.prisma.membership.delete({
+      where: { userId_workspaceId: { userId, workspaceId } },
+    });
+  }
+
+  /** Transfere a propriedade para outro membro; o antigo dono vira ADMIN. */
+  async transferOwnership(
+    workspaceId: string,
+    currentOwnerId: string,
+    targetUserId: string,
+  ): Promise<void> {
+    const workspace = await this.getWorkspaceOr404(workspaceId);
+    if (workspace.ownerId !== currentOwnerId) {
+      throw new ForbiddenException('Apenas o dono pode transferir a propriedade');
+    }
+    if (targetUserId === currentOwnerId) {
+      throw new BadRequestException('Você já é o dono');
+    }
+    const target = await this.prisma.membership.findUnique({
+      where: { userId_workspaceId: { userId: targetUserId, workspaceId } },
+    });
+    if (!target) {
+      throw new NotFoundException('O novo dono precisa ser membro do workspace');
+    }
+    await this.prisma.$transaction([
+      this.prisma.workspace.update({
+        where: { id: workspaceId },
+        data: { ownerId: targetUserId },
+      }),
+      this.prisma.membership.update({
+        where: { userId_workspaceId: { userId: targetUserId, workspaceId } },
+        data: { role: 'OWNER' },
+      }),
+      this.prisma.membership.update({
+        where: { userId_workspaceId: { userId: currentOwnerId, workspaceId } },
+        data: { role: 'ADMIN' },
+      }),
+    ]);
+  }
+
   // ─── Convites ──────────────────────────────────────────────────────────────
 
   /** Cria um convite por link (token). */

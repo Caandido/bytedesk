@@ -54,6 +54,10 @@ interface AuthState {
   setActiveWorkspace: (id: string) => void;
   /** Adiciona (ou atualiza) um workspace na lista — ex.: ao criar ou aceitar convite. */
   addWorkspace: (workspace: Workspace, activate?: boolean) => void;
+  /** Remove um workspace da lista (após excluir/sair) e reativa outro. */
+  removeWorkspace: (id: string) => void;
+  /** Renomeia um workspace na lista local. */
+  renameWorkspace: (id: string, name: string) => void;
   /** Encerra a sessão e limpa o cache. */
   logout: () => void;
 }
@@ -129,6 +133,34 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     });
     if (activate) queryClient.clear();
     set({ workspaces: nextWorkspaces, activeWorkspaceId: nextActive });
+  },
+
+  removeWorkspace: (id) => {
+    const { token, user, workspaces, activeWorkspaceId } = get();
+    if (!token || !user) return;
+    const nextWorkspaces = workspaces.filter((w) => w.id !== id);
+    if (nextWorkspaces.length === 0) {
+      // Não deveria acontecer (backend bloqueia o último), mas por segurança:
+      get().logout();
+      return;
+    }
+    const nextActive =
+      activeWorkspaceId === id || !activeWorkspaceId
+        ? nextWorkspaces[0].id
+        : activeWorkspaceId;
+    persist({ token, user, workspaces: nextWorkspaces, activeWorkspaceId: nextActive });
+    queryClient.clear();
+    set({ workspaces: nextWorkspaces, activeWorkspaceId: nextActive });
+  },
+
+  renameWorkspace: (id, name) => {
+    const { token, user, workspaces, activeWorkspaceId } = get();
+    if (!token || !user || !activeWorkspaceId) return;
+    const nextWorkspaces = workspaces.map((w) =>
+      w.id === id ? { ...w, name } : w,
+    );
+    persist({ token, user, workspaces: nextWorkspaces, activeWorkspaceId });
+    set({ workspaces: nextWorkspaces });
   },
 
   logout: () => {

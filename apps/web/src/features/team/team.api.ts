@@ -16,6 +16,20 @@ export const teamApi = {
       method: 'POST',
       body: JSON.stringify(input),
     }),
+  renameWorkspace: (input: CreateWorkspaceInput) =>
+    apiFetch<Workspace>('/workspaces', {
+      method: 'PATCH',
+      body: JSON.stringify(input),
+    }),
+  deleteWorkspace: () =>
+    apiFetch<void>('/workspaces', { method: 'DELETE' }),
+  leaveWorkspace: () =>
+    apiFetch<void>('/workspaces/leave', { method: 'POST' }),
+  transferOwnership: (userId: string) =>
+    apiFetch<void>('/workspaces/transfer', {
+      method: 'POST',
+      body: JSON.stringify({ userId }),
+    }),
   members: () => apiFetch<WorkspaceMember[]>('/workspaces/members'),
   updateMember: (userId: string, input: UpdateMemberInput) =>
     apiFetch<WorkspaceMember>(`/workspaces/members/${userId}`, {

@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
@@ -202,10 +206,29 @@ export class RoadmapsService {
     workspaceId: string,
   ) {
     await this.ensureRoadmap(roadmapId, workspaceId);
-    const count = await this.prisma.roadmapItem.count({ where: { roadmapId } });
+    // Sub-item: valida que o pai é da mesma trilha e é um tópico raiz (1 nível).
+    if (dto.parentId) {
+      const parent = await this.prisma.roadmapItem.findFirst({
+        where: { id: dto.parentId, roadmapId },
+        select: { parentId: true },
+      });
+      if (!parent) {
+        throw new NotFoundException('Item pai não encontrado nesta trilha');
+      }
+      if (parent.parentId) {
+        throw new BadRequestException(
+          'Sub-itens só podem estar em um tópico raiz (1 nível)',
+        );
+      }
+    }
+    // Posição no fim do grupo (irmãos com o mesmo parentId).
+    const count = await this.prisma.roadmapItem.count({
+      where: { roadmapId, parentId: dto.parentId ?? null },
+    });
     return this.prisma.roadmapItem.create({
       data: {
         roadmapId,
+        parentId: dto.parentId ?? null,
         title: dto.title,
         description: dto.description,
         recommendedTime: dto.recommendedTime,
