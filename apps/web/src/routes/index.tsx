@@ -85,10 +85,8 @@ const EstatisticasPage = lazy(() =>
     default: m.EstatisticasPage,
   })),
 );
-const PlaceholderPage = lazy(() =>
-  import('@/pages/PlaceholderPage').then((m) => ({
-    default: m.PlaceholderPage,
-  })),
+const GitPage = lazy(() =>
+  import('@/pages/GitPage').then((m) => ({ default: m.GitPage })),
 );
 const NotFoundPage = lazy(() =>
   import('@/pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage })),
@@ -124,15 +122,7 @@ export const router = createBrowserRouter([
       { path: 'roadmaps/:id/editar', element: <RoadmapFormPage /> },
       { path: 'conhecimento', element: <ConhecimentoPage /> },
       { path: 'estatisticas', element: <EstatisticasPage /> },
-      {
-        path: 'git',
-        element: (
-          <PlaceholderPage
-            title="Git"
-            description="Informações de repositório, branches e versões."
-          />
-        ),
-      },
+      { path: 'git', element: <GitPage /> },
       { path: '*', element: <NotFoundPage /> },
     ],
   },

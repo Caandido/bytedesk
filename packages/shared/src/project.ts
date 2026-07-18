@@ -54,6 +54,11 @@ export const createProjectSchema = z.object({
   docsUrl: optionalUrl,
   startDate: z.coerce.date().nullable().optional(),
   deadline: z.coerce.date().nullable().optional(),
+  // Git (campos manuais, sem integração ainda)
+  gitBranch: z.string().trim().max(120).optional().default(''),
+  lastCommit: z.string().trim().max(200).optional().default(''),
+  nextVersion: z.string().trim().max(40).optional().default(''),
+  gitTags: z.array(z.string().trim().min(1).max(60)).optional().default([]),
 });
 
 /** Payload para atualizar um projeto (todos os campos opcionais). */
@@ -77,6 +82,10 @@ export const projectSchema = z
     docsUrl: z.string(),
     startDate: z.coerce.date().nullable(),
     deadline: z.coerce.date().nullable(),
+    gitBranch: z.string(),
+    lastCommit: z.string(),
+    nextVersion: z.string(),
+    gitTags: z.array(z.string()),
     objectives: z.array(objectiveSchema).optional(),
   })
   .merge(timestampsSchema);

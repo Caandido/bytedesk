@@ -118,12 +118,18 @@ model Project {
   status       ProjectStatus   @default(PLANNING)
   priority     ProjectPriority @default(MEDIUM)
   version      String          @default("")
-  repoUrl      String          @default("") // GitHub/GitLab
+  repoUrl      String          @default("") // GitHub/GitLab (repositório)
   figmaUrl     String          @default("")
   deployUrl    String          @default("")
   docsUrl      String          @default("")
   startDate    DateTime?
   deadline     DateTime?
+
+  // Git (sem integração ainda — campos manuais)
+  gitBranch   String   @default("")
+  lastCommit  String   @default("")
+  nextVersion String   @default("")
+  gitTags     String[] @default([])
 
   objectives ProjectObjective[]
   tasks      Task[]
