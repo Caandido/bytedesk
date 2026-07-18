@@ -99,6 +99,7 @@ jobs:
         working-directory: apps/web
         run: |
           npx cap add android
+          npx @capacitor/assets generate --android
           npx cap sync android
           cd android
           chmod +x ./gradlew
