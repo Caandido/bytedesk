@@ -22,3 +22,4 @@ export * from './version';
 export * from './roadmap';
 export * from './wiki';
 export * from './stats';
+export * from './diary';

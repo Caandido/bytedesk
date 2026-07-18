@@ -5,6 +5,8 @@ import {
   ListChecks,
   Bug as BugIcon,
   Clock,
+  Map as MapIcon,
+  BookOpen,
   Loader2,
   ArrowRight,
   type LucideIcon,
@@ -78,6 +80,18 @@ export function DashboardPage() {
           icon={Clock}
           value={`${d.studies.hoursStudied}h`}
           label="Horas estudadas"
+        />
+        <StatCard
+          icon={MapIcon}
+          value={d.roadmaps.total}
+          label="Roadmaps"
+          hint={`${d.roadmaps.itemsDone}/${d.roadmaps.itemsTotal} itens`}
+        />
+        <StatCard
+          icon={BookOpen}
+          value={d.wiki.total}
+          label="Conhecimento"
+          hint={`${d.wiki.favorites} favoritas`}
         />
       </div>
 

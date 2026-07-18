@@ -27,6 +27,7 @@ const quickActions = [
   { label: 'Novo projeto', path: '/projetos/novo', icon: Plus },
   { label: 'Novo roadmap', path: '/roadmaps/novo', icon: Plus },
   { label: 'Nova página (Conhecimento)', path: '/conhecimento', icon: Plus },
+  { label: 'Novo registro no diário', path: '/diario', icon: Plus },
 ];
 
 const RESULT_ICON: Record<SearchResultType, LucideIcon> = {

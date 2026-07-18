@@ -4,6 +4,7 @@ import {
   Map,
   FolderKanban,
   BookOpen,
+  NotebookPen,
   BarChart3,
   GitBranch,
   type LucideIcon,
@@ -26,6 +27,7 @@ export const navItems: NavItem[] = [
   { label: 'Roadmaps', path: '/roadmaps', icon: Map },
   { label: 'Projetos', path: '/projetos', icon: FolderKanban },
   { label: 'Conhecimento', path: '/conhecimento', icon: BookOpen },
+  { label: 'Diário', path: '/diario', icon: NotebookPen },
   { label: 'Estatísticas', path: '/estatisticas', icon: BarChart3 },
   { label: 'Git', path: '/git', icon: GitBranch },
 ];

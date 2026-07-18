@@ -88,6 +88,9 @@ const EstatisticasPage = lazy(() =>
 const GitPage = lazy(() =>
   import('@/pages/GitPage').then((m) => ({ default: m.GitPage })),
 );
+const DiarioPage = lazy(() =>
+  import('@/pages/DiarioPage').then((m) => ({ default: m.DiarioPage })),
+);
 const NotFoundPage = lazy(() =>
   import('@/pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage })),
 );
@@ -121,6 +124,7 @@ export const router = createBrowserRouter([
       { path: 'roadmaps/:id', element: <RoadmapDetailPage /> },
       { path: 'roadmaps/:id/editar', element: <RoadmapFormPage /> },
       { path: 'conhecimento', element: <ConhecimentoPage /> },
+      { path: 'diario', element: <DiarioPage /> },
       { path: 'estatisticas', element: <EstatisticasPage /> },
       { path: 'git', element: <GitPage /> },
       { path: '*', element: <NotFoundPage /> },

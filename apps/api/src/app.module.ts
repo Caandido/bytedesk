@@ -14,6 +14,7 @@ import { VersionsModule } from './modules/versions/versions.module';
 import { RoadmapsModule } from './modules/roadmaps/roadmaps.module';
 import { WikiModule } from './modules/wiki/wiki.module';
 import { StatsModule } from './modules/stats/stats.module';
+import { DiaryModule } from './modules/diary/diary.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { StatsModule } from './modules/stats/stats.module';
     RoadmapsModule,
     WikiModule,
     StatsModule,
+    DiaryModule,
   ],
 })
 export class AppModule {}

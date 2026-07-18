@@ -33,6 +33,10 @@ export class DashboardService {
       projectCounts,
       taskCounts,
       bugCounts,
+      roadmapTotal,
+      roadmapItems,
+      wikiTotal,
+      wikiFavorites,
       recentStudies,
       upcomingTasks,
       recentBugs,
@@ -42,6 +46,10 @@ export class DashboardService {
       this.prisma.project.groupBy({ by: ['status'], _count: { _all: true } }),
       this.prisma.task.groupBy({ by: ['status'], _count: { _all: true } }),
       this.prisma.bug.groupBy({ by: ['status'], _count: { _all: true } }),
+      this.prisma.roadmap.count(),
+      this.prisma.roadmapItem.groupBy({ by: ['done'], _count: { _all: true } }),
+      this.prisma.wikiPage.count(),
+      this.prisma.wikiPage.count({ where: { favorite: true } }),
       this.prisma.study.findMany({
         where: { status: 'IN_PROGRESS' },
         orderBy: { updatedAt: 'desc' },
@@ -89,6 +97,14 @@ export class DashboardService {
         open: sumStatuses(bugCounts, ['OPEN', 'IN_PROGRESS']),
         resolved: sumStatuses(bugCounts, ['RESOLVED']),
       },
+      roadmaps: {
+        total: roadmapTotal,
+        itemsTotal: roadmapItems.reduce((a, r) => a + r._count._all, 0),
+        itemsDone: roadmapItems
+          .filter((r) => r.done)
+          .reduce((a, r) => a + r._count._all, 0),
+      },
+      wiki: { total: wikiTotal, favorites: wikiFavorites },
       recentStudies: recentStudies.map((s) => ({
         id: s.id,
         name: s.name,

@@ -136,6 +136,7 @@ model Project {
   bugs       Bug[]
   docs       ProjectDoc[]
   versions   ProjectVersion[]
+  diary      DiaryEntry[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -266,6 +267,30 @@ model ProjectDoc {
 
   @@index([projectId])
   @@map("project_docs")
+}
+
+// ─── Módulo Diário de Desenvolvimento ────────────────────────────────────────
+
+/// Registro de uma sessão de desenvolvimento/estudo.
+model DiaryEntry {
+  id           String   @id @default(cuid())
+  date         DateTime @default(now())
+  minutesSpent Int      @default(0)
+  done         String   @default("") // O que foi feito
+  problems     String   @default("") // Problemas encontrados
+  solutions    String   @default("") // Como resolveu
+  nextSteps    String   @default("") // Próximos passos
+  mood         Int      @default(3) // Humor 1–5
+  productivity Int      @default(3) // Produtividade 1–5
+
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([date])
+  @@map("diary_entries")
 }
 
 // ─── Módulo Conhecimento (Wiki) ──────────────────────────────────────────────

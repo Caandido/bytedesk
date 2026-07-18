@@ -61,6 +61,15 @@ export const dashboardSchema = z.object({
     open: z.number().int(),
     resolved: z.number().int(),
   }),
+  roadmaps: z.object({
+    total: z.number().int(),
+    itemsTotal: z.number().int(),
+    itemsDone: z.number().int(),
+  }),
+  wiki: z.object({
+    total: z.number().int(),
+    favorites: z.number().int(),
+  }),
   recentStudies: z.array(dashboardStudySchema),
   upcomingTasks: z.array(dashboardTaskSchema),
   recentBugs: z.array(dashboardBugSchema),
