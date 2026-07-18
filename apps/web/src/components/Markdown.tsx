@@ -1,8 +1,32 @@
-import ReactMarkdown from 'react-markdown';
+import ReactMarkdown, { type Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
 import 'highlight.js/styles/github-dark.css';
 import { cn } from '@/lib/utils';
+import { MermaidDiagram } from '@/components/MermaidDiagram';
+
+/** Extrai o texto cru de um nó hast (independente dos spans do realce). */
+function nodeText(node: unknown): string {
+  const n = node as { value?: string; children?: unknown[] };
+  if (!n) return '';
+  if (typeof n.value === 'string') return n.value;
+  if (Array.isArray(n.children)) return n.children.map(nodeText).join('');
+  return '';
+}
+
+/** Renderiza blocos ```mermaid como diagrama; o resto como código normal. */
+const markdownComponents: Components = {
+  code({ className, children, node, ...props }) {
+    if (/\blanguage-mermaid\b/.test(className ?? '')) {
+      return <MermaidDiagram chart={nodeText(node)} />;
+    }
+    return (
+      <code className={className} {...props}>
+        {children}
+      </code>
+    );
+  },
+};
 
 interface MarkdownProps {
   content: string;
@@ -44,6 +68,7 @@ export function Markdown({ content, className }: MarkdownProps) {
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[[rehypeHighlight, { detect: true, ignoreMissing: true }]]}
+        components={markdownComponents}
       >
         {content}
       </ReactMarkdown>
