@@ -10,6 +10,7 @@ import { ProjectLayout } from '@/pages/project/ProjectLayout';
 import { ProjectOverviewPage } from '@/pages/project/ProjectOverviewPage';
 import { ProjectTasksPage } from '@/pages/project/ProjectTasksPage';
 import { ProjectBugsPage } from '@/pages/project/ProjectBugsPage';
+import { ProjectVersionsPage } from '@/pages/project/ProjectVersionsPage';
 import { ProjectDocsPage } from '@/pages/project/ProjectDocsPage';
 import { PlaceholderPage } from '@/pages/PlaceholderPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
@@ -38,6 +39,7 @@ export const router = createBrowserRouter([
           { index: true, element: <ProjectOverviewPage /> },
           { path: 'tarefas', element: <ProjectTasksPage /> },
           { path: 'bugs', element: <ProjectBugsPage /> },
+          { path: 'versoes', element: <ProjectVersionsPage /> },
           { path: 'docs', element: <ProjectDocsPage /> },
         ],
       },

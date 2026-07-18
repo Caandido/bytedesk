@@ -10,6 +10,7 @@ import { BugsModule } from './modules/bugs/bugs.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { SearchModule } from './modules/search/search.module';
 import { DocsModule } from './modules/docs/docs.module';
+import { VersionsModule } from './modules/versions/versions.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { DocsModule } from './modules/docs/docs.module';
     DashboardModule,
     SearchModule,
     DocsModule,
+    VersionsModule,
   ],
 })
 export class AppModule {}
