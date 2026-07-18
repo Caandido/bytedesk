@@ -5,7 +5,8 @@
   "description": "DevFlow — Programming Study & Project Manager",
   "workspaces": [
     "packages/*",
-    "apps/*"
+    "apps/api",
+    "apps/web"
   ],
   "scripts": {
     "dev": "concurrently -n api,web -c green,cyan \"npm run dev -w @devflow/api\" \"npm run dev -w @devflow/web\"",

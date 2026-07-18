@@ -10,7 +10,10 @@ import { useAuthStore } from '@/stores/auth';
  * para o login).
  */
 
-const API_BASE = '/api';
+// Web (Vercel): mesma origem → caminho relativo `/api`.
+// Nativo (Electron/Capacitor): sem proxy nem mesma origem → URL absoluta da API,
+// injetada em build via VITE_API_URL (ex.: https://bytedesk-two.vercel.app/api).
+const API_BASE = import.meta.env.VITE_API_URL ?? '/api';
 
 /** Extrai a mensagem legível do corpo de erro do Nest (`{ message }`) ou usa o texto cru. */
 function extractMessage(body: string): string {

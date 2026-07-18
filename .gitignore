@@ -34,3 +34,12 @@ apps/api/generated/
 .vercel/
 
 .vercel
+
+# Empacotamento nativo (gerado no CI)
+apps/web/android/
+apps/web/ios/
+apps/desktop/release/
+*.apk
+*.exe
+*.appx
+*.dmg

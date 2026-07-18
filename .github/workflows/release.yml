@@ -1,8 +1,8 @@
 name: Release
 
-# Dispara ao enviar uma tag de versão (ex.: v0.1.0), criada por `npm version`.
-# Fluxo: `npm run release:patch` (ou minor/major) → cria commit + tag e faz push →
-# este workflow publica uma Release no GitHub com o número da versão.
+# Dispara ao enviar uma tag de versão (ex.: v1.0.0), criada por `npm version`.
+# Fluxo: `npm run release:*` cria commit + tag e faz push → este workflow publica
+# uma Release no GitHub e anexa os instaladores desktop (.exe) e mobile (.apk).
 on:
   push:
     tags:
@@ -27,3 +27,88 @@ jobs:
           gh release create "${GITHUB_REF_NAME}" \
             --title "${GITHUB_REF_NAME}" \
             --generate-notes
+
+  desktop:
+    # Build do app desktop (.exe) no Windows.
+    needs: release
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Sincroniza a versão do desktop com a tag
+        shell: bash
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          cd apps/desktop
+          npm version "$VERSION" --no-git-tag-version --allow-same-version
+
+      - name: Instala e builda o .exe
+        working-directory: apps/desktop
+        run: |
+          npm install
+          npm run dist
+
+      - name: Anexa o .exe à release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload "${GITHUB_REF_NAME}" apps/desktop/release/*.exe --clobber
+
+  android:
+    # Build do app Android (.apk) no Linux, com JDK + Android SDK.
+    needs: release
+    runs-on: ubuntu-latest
+    env:
+      VITE_API_URL: https://bytedesk-two.vercel.app/api
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Instala dependências
+        run: npm ci
+
+      - name: Builda o web (com API absoluta)
+        run: |
+          npm run build -w @devflow/shared
+          npm run build -w @devflow/web
+
+      - name: Gera e builda o projeto Android
+        working-directory: apps/web
+        run: |
+          npx cap add android
+          npx cap sync android
+          cd android
+          chmod +x ./gradlew
+          ./gradlew assembleDebug
+
+      - name: Renomeia e anexa o .apk à release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          APK=apps/web/android/app/build/outputs/apk/debug/app-debug.apk
+          cp "$APK" "DevFlow-${VERSION}.apk"
+          gh release upload "${GITHUB_REF_NAME}" "DevFlow-${VERSION}.apk" --clobber
