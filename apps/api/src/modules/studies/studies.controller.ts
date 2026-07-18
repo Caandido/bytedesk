@@ -16,45 +16,55 @@ import {
   CreateSectionDto,
   UpdateSectionDto,
 } from './dto/study.dto';
+import { WorkspaceId } from '../auth/auth.decorators';
 
 /**
  * API do módulo Estudos. CRUD do estudo + sub-recurso de objetivos (checklist).
  * Prefixo global "/api" é aplicado no app.factory → rotas finais em /api/studies.
+ * Toda rota opera no workspace ativo (`@WorkspaceId()`).
  */
 @Controller('studies')
 export class StudiesController {
   constructor(private readonly studiesService: StudiesService) {}
 
   @Get()
-  findAll() {
-    return this.studiesService.findAll();
+  findAll(@WorkspaceId() workspaceId: string) {
+    return this.studiesService.findAll(workspaceId);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.studiesService.findOne(id);
+  findOne(@Param('id') id: string, @WorkspaceId() workspaceId: string) {
+    return this.studiesService.findOne(id, workspaceId);
   }
 
   @Post()
-  create(@Body() dto: CreateStudyDto) {
-    return this.studiesService.create(dto);
+  create(@Body() dto: CreateStudyDto, @WorkspaceId() workspaceId: string) {
+    return this.studiesService.create(dto, workspaceId);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() dto: UpdateStudyDto) {
-    return this.studiesService.update(id, dto);
+  update(
+    @Param('id') id: string,
+    @Body() dto: UpdateStudyDto,
+    @WorkspaceId() workspaceId: string,
+  ) {
+    return this.studiesService.update(id, dto, workspaceId);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.studiesService.remove(id);
+  remove(@Param('id') id: string, @WorkspaceId() workspaceId: string) {
+    return this.studiesService.remove(id, workspaceId);
   }
 
   // ─── Objetivos ───────────────────────────────────────────────────────────
 
   @Post(':id/objectives')
-  addObjective(@Param('id') id: string, @Body() dto: CreateObjectiveDto) {
-    return this.studiesService.addObjective(id, dto);
+  addObjective(
+    @Param('id') id: string,
+    @Body() dto: CreateObjectiveDto,
+    @WorkspaceId() workspaceId: string,
+  ) {
+    return this.studiesService.addObjective(id, dto, workspaceId);
   }
 
   @Patch(':id/objectives/:objectiveId')
@@ -62,23 +72,29 @@ export class StudiesController {
     @Param('id') id: string,
     @Param('objectiveId') objectiveId: string,
     @Body() dto: UpdateObjectiveDto,
+    @WorkspaceId() workspaceId: string,
   ) {
-    return this.studiesService.updateObjective(id, objectiveId, dto);
+    return this.studiesService.updateObjective(id, objectiveId, dto, workspaceId);
   }
 
   @Delete(':id/objectives/:objectiveId')
   removeObjective(
     @Param('id') id: string,
     @Param('objectiveId') objectiveId: string,
+    @WorkspaceId() workspaceId: string,
   ) {
-    return this.studiesService.removeObjective(id, objectiveId);
+    return this.studiesService.removeObjective(id, objectiveId, workspaceId);
   }
 
   // ─── Seções ──────────────────────────────────────────────────────────────
 
   @Post(':id/sections')
-  addSection(@Param('id') id: string, @Body() dto: CreateSectionDto) {
-    return this.studiesService.addSection(id, dto);
+  addSection(
+    @Param('id') id: string,
+    @Body() dto: CreateSectionDto,
+    @WorkspaceId() workspaceId: string,
+  ) {
+    return this.studiesService.addSection(id, dto, workspaceId);
   }
 
   @Patch(':id/sections/:sectionId')
@@ -86,15 +102,17 @@ export class StudiesController {
     @Param('id') id: string,
     @Param('sectionId') sectionId: string,
     @Body() dto: UpdateSectionDto,
+    @WorkspaceId() workspaceId: string,
   ) {
-    return this.studiesService.updateSection(id, sectionId, dto);
+    return this.studiesService.updateSection(id, sectionId, dto, workspaceId);
   }
 
   @Delete(':id/sections/:sectionId')
   removeSection(
     @Param('id') id: string,
     @Param('sectionId') sectionId: string,
+    @WorkspaceId() workspaceId: string,
   ) {
-    return this.studiesService.removeSection(id, sectionId);
+    return this.studiesService.removeSection(id, sectionId, workspaceId);
   }
 }

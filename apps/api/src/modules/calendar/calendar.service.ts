@@ -12,20 +12,23 @@ const asDay = (d: Date) => d.toISOString().slice(0, 10);
 export class CalendarService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getEvents(): Promise<CalendarEvent[]> {
+  async getEvents(workspaceId: string): Promise<CalendarEvent[]> {
     const [projects, studies, versions, diary] = await Promise.all([
       this.prisma.project.findMany({
+        where: { workspaceId },
         select: { id: true, name: true, startDate: true, deadline: true },
       }),
       this.prisma.study.findMany({
-        where: { startDate: { not: null } },
+        where: { workspaceId, startDate: { not: null } },
         select: { id: true, name: true, startDate: true },
       }),
+      // Versões não têm workspaceId próprio: filtram pela relação do projeto.
       this.prisma.projectVersion.findMany({
-        where: { releasedAt: { not: null } },
+        where: { project: { workspaceId }, releasedAt: { not: null } },
         select: { id: true, version: true, releasedAt: true, projectId: true },
       }),
       this.prisma.diaryEntry.findMany({
+        where: { workspaceId },
         select: { id: true, date: true, done: true },
       }),
     ]);

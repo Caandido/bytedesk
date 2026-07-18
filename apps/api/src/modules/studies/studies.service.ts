@@ -19,21 +19,24 @@ const studyInclude = {
 /**
  * Regras de acesso a dados do módulo Estudos. Espelha o padrão do NotesService:
  * `ensureStudy`/`ensureObjective` centralizam o 404, e os métodos permanecem finos.
+ * Tudo é escopado por workspace: o estudo (entidade-raiz) tem `workspaceId`; os
+ * sub-recursos (objetivos e seções) são escopados VIA o estudo pai.
  */
 @Injectable()
 export class StudiesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  findAll() {
+  findAll(workspaceId: string) {
     return this.prisma.study.findMany({
+      where: { workspaceId },
       orderBy: { updatedAt: 'desc' },
       include: studyInclude,
     });
   }
 
-  async findOne(id: string) {
-    const study = await this.prisma.study.findUnique({
-      where: { id },
+  async findOne(id: string, workspaceId: string) {
+    const study = await this.prisma.study.findFirst({
+      where: { id, workspaceId },
       include: studyInclude,
     });
     if (!study) {
@@ -42,16 +45,19 @@ export class StudiesService {
     return study;
   }
 
-  create(dto: CreateStudyDto) {
+  create(dto: CreateStudyDto, workspaceId: string) {
     // O CreateStudyDto garante `name`, logo o cast para o input de create é seguro.
     return this.prisma.study.create({
-      data: this.toStudyData(dto) as Prisma.StudyUncheckedCreateInput,
+      data: {
+        ...this.toStudyData(dto),
+        workspaceId,
+      } as Prisma.StudyUncheckedCreateInput,
       include: studyInclude,
     });
   }
 
-  async update(id: string, dto: UpdateStudyDto) {
-    await this.ensureStudy(id);
+  async update(id: string, dto: UpdateStudyDto, workspaceId: string) {
+    await this.ensureStudy(id, workspaceId);
     return this.prisma.study.update({
       where: { id },
       data: this.toStudyData(dto),
@@ -59,16 +65,20 @@ export class StudiesService {
     });
   }
 
-  async remove(id: string) {
-    await this.ensureStudy(id);
+  async remove(id: string, workspaceId: string) {
+    await this.ensureStudy(id, workspaceId);
     // Os objetivos são removidos em cascata (onDelete: Cascade).
     return this.prisma.study.delete({ where: { id } });
   }
 
   // ─── Objetivos (checklist) ─────────────────────────────────────────────────
 
-  async addObjective(studyId: string, dto: CreateObjectiveDto) {
-    await this.ensureStudy(studyId);
+  async addObjective(
+    studyId: string,
+    dto: CreateObjectiveDto,
+    workspaceId: string,
+  ) {
+    await this.ensureStudy(studyId, workspaceId);
     const count = await this.prisma.studyObjective.count({ where: { studyId } });
     return this.prisma.studyObjective.create({
       data: { studyId, title: dto.title, position: count },
@@ -79,23 +89,32 @@ export class StudiesService {
     studyId: string,
     objectiveId: string,
     dto: UpdateObjectiveDto,
+    workspaceId: string,
   ) {
-    await this.ensureObjective(studyId, objectiveId);
+    await this.ensureObjective(studyId, objectiveId, workspaceId);
     return this.prisma.studyObjective.update({
       where: { id: objectiveId },
       data: dto,
     });
   }
 
-  async removeObjective(studyId: string, objectiveId: string) {
-    await this.ensureObjective(studyId, objectiveId);
+  async removeObjective(
+    studyId: string,
+    objectiveId: string,
+    workspaceId: string,
+  ) {
+    await this.ensureObjective(studyId, objectiveId, workspaceId);
     return this.prisma.studyObjective.delete({ where: { id: objectiveId } });
   }
 
   // ─── Seções (cards de conteúdo) ────────────────────────────────────────────
 
-  async addSection(studyId: string, dto: CreateSectionDto) {
-    await this.ensureStudy(studyId);
+  async addSection(
+    studyId: string,
+    dto: CreateSectionDto,
+    workspaceId: string,
+  ) {
+    await this.ensureStudy(studyId, workspaceId);
     const count = await this.prisma.studySection.count({ where: { studyId } });
     return this.prisma.studySection.create({
       data: { studyId, title: dto.title, content: dto.content, position: count },
@@ -106,16 +125,21 @@ export class StudiesService {
     studyId: string,
     sectionId: string,
     dto: UpdateSectionDto,
+    workspaceId: string,
   ) {
-    await this.ensureSection(studyId, sectionId);
+    await this.ensureSection(studyId, sectionId, workspaceId);
     return this.prisma.studySection.update({
       where: { id: sectionId },
       data: dto,
     });
   }
 
-  async removeSection(studyId: string, sectionId: string) {
-    await this.ensureSection(studyId, sectionId);
+  async removeSection(
+    studyId: string,
+    sectionId: string,
+    workspaceId: string,
+  ) {
+    await this.ensureSection(studyId, sectionId, workspaceId);
     return this.prisma.studySection.delete({ where: { id: sectionId } });
   }
 
@@ -136,9 +160,9 @@ export class StudiesService {
     return data;
   }
 
-  private async ensureStudy(id: string): Promise<void> {
-    const exists = await this.prisma.study.findUnique({
-      where: { id },
+  private async ensureStudy(id: string, workspaceId: string): Promise<void> {
+    const exists = await this.prisma.study.findFirst({
+      where: { id, workspaceId },
       select: { id: true },
     });
     if (!exists) {
@@ -149,7 +173,10 @@ export class StudiesService {
   private async ensureObjective(
     studyId: string,
     objectiveId: string,
+    workspaceId: string,
   ): Promise<void> {
+    // Garante primeiro que o estudo pai pertence ao workspace ativo.
+    await this.ensureStudy(studyId, workspaceId);
     const objective = await this.prisma.studyObjective.findUnique({
       where: { id: objectiveId },
       select: { studyId: true },
@@ -164,7 +191,10 @@ export class StudiesService {
   private async ensureSection(
     studyId: string,
     sectionId: string,
+    workspaceId: string,
   ): Promise<void> {
+    // Garante primeiro que o estudo pai pertence ao workspace ativo.
+    await this.ensureStudy(studyId, workspaceId);
     const section = await this.prisma.studySection.findUnique({
       where: { id: sectionId },
       select: { studyId: true },

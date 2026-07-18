@@ -29,7 +29,7 @@ const totalOf = <T extends string>(rows: StatusCount<T>[]): number =>
 export class DashboardService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getData(): Promise<DashboardData> {
+  async getData(workspaceId: string): Promise<DashboardData> {
     const [
       studyCounts,
       studyHours,
@@ -45,34 +45,62 @@ export class DashboardService {
       recentBugs,
       activity,
     ] = await Promise.all([
-      this.prisma.study.groupBy({ by: ['status'], _count: { _all: true } }),
-      this.prisma.study.aggregate({ _sum: { hoursStudied: true } }),
-      this.prisma.project.groupBy({ by: ['status'], _count: { _all: true } }),
-      this.prisma.task.groupBy({ by: ['status'], _count: { _all: true } }),
-      this.prisma.bug.groupBy({ by: ['status'], _count: { _all: true } }),
-      this.prisma.roadmap.count(),
-      this.prisma.roadmapItem.groupBy({ by: ['done'], _count: { _all: true } }),
-      this.prisma.wikiPage.count(),
-      this.prisma.wikiPage.count({ where: { favorite: true } }),
+      this.prisma.study.groupBy({
+        by: ['status'],
+        _count: { _all: true },
+        where: { workspaceId },
+      }),
+      this.prisma.study.aggregate({
+        _sum: { hoursStudied: true },
+        where: { workspaceId },
+      }),
+      this.prisma.project.groupBy({
+        by: ['status'],
+        _count: { _all: true },
+        where: { workspaceId },
+      }),
+      // Tarefas/bugs não têm workspaceId próprio: filtram pela relação do projeto.
+      this.prisma.task.groupBy({
+        by: ['status'],
+        _count: { _all: true },
+        where: { project: { workspaceId } },
+      }),
+      this.prisma.bug.groupBy({
+        by: ['status'],
+        _count: { _all: true },
+        where: { project: { workspaceId } },
+      }),
+      this.prisma.roadmap.count({ where: { workspaceId } }),
+      // Itens de roadmap filtram pelo workspace do roadmap pai.
+      this.prisma.roadmapItem.groupBy({
+        by: ['done'],
+        _count: { _all: true },
+        where: { roadmap: { workspaceId } },
+      }),
+      this.prisma.wikiPage.count({ where: { workspaceId } }),
+      this.prisma.wikiPage.count({ where: { workspaceId, favorite: true } }),
       this.prisma.study.findMany({
-        where: { status: 'IN_PROGRESS' },
+        where: { workspaceId, status: 'IN_PROGRESS' },
         orderBy: { updatedAt: 'desc' },
         take: 5,
         include: { objectives: { select: { done: true } } },
       }),
       this.prisma.task.findMany({
-        where: { status: { not: 'DONE' } },
+        where: { project: { workspaceId }, status: { not: 'DONE' } },
         orderBy: { updatedAt: 'desc' },
         take: 6,
         include: { project: { select: { name: true } } },
       }),
       this.prisma.bug.findMany({
-        where: { status: { in: ['OPEN', 'IN_PROGRESS'] } },
+        where: {
+          project: { workspaceId },
+          status: { in: ['OPEN', 'IN_PROGRESS'] },
+        },
         orderBy: { updatedAt: 'desc' },
         take: 6,
         include: { project: { select: { name: true } } },
       }),
-      this.activityByDay(),
+      this.activityByDay(workspaceId),
     ]);
 
     return {
@@ -143,21 +171,26 @@ export class DashboardService {
    * datas de criação dos módulos + as datas das entradas do diário e conta os eventos
    * por dia (UTC). Retorna só os dias com atividade — o front preenche o restante.
    */
-  private async activityByDay(): Promise<DashboardData['activity']> {
+  private async activityByDay(
+    workspaceId: string,
+  ): Promise<DashboardData['activity']> {
+    // Tabelas-raiz filtram por "workspaceId" direto; tabelas-filhas de projeto
+    // (tasks, bugs, project_versions, project_docs, ideas) filtram pelo projeto do
+    // workspace. Interpolação parametrizada do Prisma (${...}) — nunca string crua.
     const rows = await this.prisma.$queryRaw<ActivityRow[]>`
       SELECT day, COUNT(*)::int AS count
       FROM (
-        SELECT "date"::date       AS day FROM diary_entries
-        UNION ALL SELECT "createdAt"::date FROM studies
-        UNION ALL SELECT "createdAt"::date FROM projects
-        UNION ALL SELECT "createdAt"::date FROM tasks
-        UNION ALL SELECT "createdAt"::date FROM bugs
-        UNION ALL SELECT "createdAt"::date FROM project_versions
-        UNION ALL SELECT "createdAt"::date FROM project_docs
-        UNION ALL SELECT "createdAt"::date FROM wiki_pages
-        UNION ALL SELECT "createdAt"::date FROM ideas
-        UNION ALL SELECT "createdAt"::date FROM notes
-        UNION ALL SELECT "createdAt"::date FROM known_errors
+        SELECT "date"::date       AS day FROM diary_entries WHERE "workspaceId" = ${workspaceId}
+        UNION ALL SELECT "createdAt"::date FROM studies WHERE "workspaceId" = ${workspaceId}
+        UNION ALL SELECT "createdAt"::date FROM projects WHERE "workspaceId" = ${workspaceId}
+        UNION ALL SELECT "createdAt"::date FROM tasks WHERE "projectId" IN (SELECT id FROM projects WHERE "workspaceId" = ${workspaceId})
+        UNION ALL SELECT "createdAt"::date FROM bugs WHERE "projectId" IN (SELECT id FROM projects WHERE "workspaceId" = ${workspaceId})
+        UNION ALL SELECT "createdAt"::date FROM project_versions WHERE "projectId" IN (SELECT id FROM projects WHERE "workspaceId" = ${workspaceId})
+        UNION ALL SELECT "createdAt"::date FROM project_docs WHERE "projectId" IN (SELECT id FROM projects WHERE "workspaceId" = ${workspaceId})
+        UNION ALL SELECT "createdAt"::date FROM wiki_pages WHERE "workspaceId" = ${workspaceId}
+        UNION ALL SELECT "createdAt"::date FROM ideas WHERE "projectId" IN (SELECT id FROM projects WHERE "workspaceId" = ${workspaceId})
+        UNION ALL SELECT "createdAt"::date FROM notes WHERE "workspaceId" = ${workspaceId}
+        UNION ALL SELECT "createdAt"::date FROM known_errors WHERE "workspaceId" = ${workspaceId}
       ) events
       WHERE day >= (CURRENT_DATE - INTERVAL '370 days')
       GROUP BY day

@@ -22,21 +22,37 @@ function toDto(entry: EntryWithProject): DiaryEntry {
 export class DiaryService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll(): Promise<DiaryEntry[]> {
+  async findAll(workspaceId: string): Promise<DiaryEntry[]> {
     const entries = await this.prisma.diaryEntry.findMany({
+      where: { workspaceId },
       orderBy: { date: 'desc' },
       include,
     });
     return entries.map(toDto);
   }
 
-  async create(dto: CreateDiaryEntryDto): Promise<DiaryEntry> {
-    const entry = await this.prisma.diaryEntry.create({ data: dto, include });
+  async create(
+    dto: CreateDiaryEntryDto,
+    workspaceId: string,
+  ): Promise<DiaryEntry> {
+    // Omite `projectId` quando vazio para não colidir com o tipo esperado pelo
+    // Prisma — entrada sem projeto continua permitida.
+    const { projectId, ...rest } = dto;
+    const data: Prisma.DiaryEntryUncheckedCreateInput = {
+      ...rest,
+      workspaceId,
+      ...(projectId ? { projectId } : {}),
+    };
+    const entry = await this.prisma.diaryEntry.create({ data, include });
     return toDto(entry);
   }
 
-  async update(id: string, dto: UpdateDiaryEntryDto): Promise<DiaryEntry> {
-    await this.ensure(id);
+  async update(
+    id: string,
+    dto: UpdateDiaryEntryDto,
+    workspaceId: string,
+  ): Promise<DiaryEntry> {
+    await this.ensure(id, workspaceId);
     const entry = await this.prisma.diaryEntry.update({
       where: { id },
       data: dto,
@@ -45,15 +61,18 @@ export class DiaryService {
     return toDto(entry);
   }
 
-  async remove(id: string): Promise<DiaryEntry> {
-    const entry = await this.ensure(id);
+  async remove(id: string, workspaceId: string): Promise<DiaryEntry> {
+    const entry = await this.ensure(id, workspaceId);
     await this.prisma.diaryEntry.delete({ where: { id } });
     return toDto(entry);
   }
 
-  private async ensure(id: string): Promise<EntryWithProject> {
-    const entry = await this.prisma.diaryEntry.findUnique({
-      where: { id },
+  private async ensure(
+    id: string,
+    workspaceId: string,
+  ): Promise<EntryWithProject> {
+    const entry = await this.prisma.diaryEntry.findFirst({
+      where: { id, workspaceId },
       include,
     });
     if (!entry) {

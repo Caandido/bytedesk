@@ -14,7 +14,7 @@ const PER_TYPE = 5;
 export class SearchService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async search(rawQuery: string): Promise<SearchResult[]> {
+  async search(rawQuery: string, workspaceId: string): Promise<SearchResult[]> {
     const term = rawQuery?.trim() ?? '';
     if (term.length < 2) return [];
 
@@ -24,6 +24,7 @@ export class SearchService {
       await Promise.all([
       this.prisma.study.findMany({
         where: {
+          workspaceId,
           OR: [
             { name: like },
             { technology: like },
@@ -37,6 +38,7 @@ export class SearchService {
       }),
       this.prisma.project.findMany({
         where: {
+          workspaceId,
           OR: [
             { name: like },
             { client: like },
@@ -48,8 +50,12 @@ export class SearchService {
         take: PER_TYPE,
         select: { id: true, name: true, client: true },
       }),
+      // Tarefas/bugs não têm workspaceId próprio: filtram pela relação do projeto.
       this.prisma.task.findMany({
-        where: { OR: [{ title: like }, { description: like }] },
+        where: {
+          project: { workspaceId },
+          OR: [{ title: like }, { description: like }],
+        },
         orderBy: { updatedAt: 'desc' },
         take: PER_TYPE,
         select: {
@@ -60,7 +66,10 @@ export class SearchService {
         },
       }),
       this.prisma.bug.findMany({
-        where: { OR: [{ title: like }, { module: like }] },
+        where: {
+          project: { workspaceId },
+          OR: [{ title: like }, { module: like }],
+        },
         orderBy: { updatedAt: 'desc' },
         take: PER_TYPE,
         select: {
@@ -71,19 +80,20 @@ export class SearchService {
         },
       }),
       this.prisma.roadmap.findMany({
-        where: { OR: [{ name: like }, { category: like }] },
+        where: { workspaceId, OR: [{ name: like }, { category: like }] },
         orderBy: { updatedAt: 'desc' },
         take: PER_TYPE,
         select: { id: true, name: true, category: true },
       }),
       this.prisma.wikiPage.findMany({
-        where: { OR: [{ title: like }, { category: like }] },
+        where: { workspaceId, OR: [{ title: like }, { category: like }] },
         orderBy: { updatedAt: 'desc' },
         take: PER_TYPE,
         select: { id: true, title: true, category: true },
       }),
       this.prisma.knownError.findMany({
         where: {
+          workspaceId,
           OR: [{ title: like }, { technology: like }, { category: like }],
         },
         orderBy: { updatedAt: 'desc' },

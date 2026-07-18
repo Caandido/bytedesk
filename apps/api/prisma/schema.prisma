@@ -21,13 +21,87 @@ datasource db {
   directUrl = env("DATABASE_URL_UNPOOLED")
 }
 
+// ─── Autenticação e Workspaces (times) ───────────────────────────────────────
+
+/// Papel de um membro dentro de um workspace.
+enum MembershipRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+/// Conta de usuário. A senha é guardada apenas como hash (bcrypt).
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String   @default("")
+
+  memberships     Membership[]
+  ownedWorkspaces Workspace[] // workspaces em que é dono (Workspace.owner)
+  favorites       Favorite[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+/// Um workspace (time) — unidade de isolamento de TODOS os dados dos módulos.
+/// `ownerId` é nulo enquanto o workspace-padrão dos dados legados não foi
+/// reivindicado pelo primeiro registro (fluxo de "claim").
+model Workspace {
+  id      String  @id @default(cuid())
+  name    String
+  ownerId String?
+  owner   User?   @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+
+  memberships Membership[]
+
+  // Dados isolados por workspace (entidades-raiz de cada módulo).
+  notes        Note[]
+  studies      Study[]
+  projects     Project[]
+  diaryEntries DiaryEntry[]
+  knownErrors  KnownError[]
+  wikiPages    WikiPage[]
+  roadmaps     Roadmap[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("workspaces")
+}
+
+/// Vínculo usuário↔workspace com papel (base do multiusuário e dos times).
+model Membership {
+  id          String         @id @default(cuid())
+  userId      String
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspaceId String
+  workspace   Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  role        MembershipRole @default(MEMBER)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, workspaceId])
+  @@index([workspaceId])
+  @@map("memberships")
+}
+
 model Note {
   id        String   @id @default(cuid())
   title     String
   content   String   @default("")
+
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([workspaceId])
   @@map("notes")
 }
 
@@ -66,9 +140,13 @@ model Study {
   objectives StudyObjective[]
   sections   StudySection[]
 
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([workspaceId])
   @@map("studies")
 }
 
@@ -157,9 +235,13 @@ model Project {
   ideas        Idea[]
   architecture ProjectArchitecture?
 
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([workspaceId])
   @@map("projects")
 }
 
@@ -362,9 +444,15 @@ model Favorite {
   subtitle String       @default("")
   url      String // rota no app (ex.: /estudos/:id)
 
+  // Favoritos são por usuário. Nullable só durante o backfill da migração;
+  // preenchido no "claim" do primeiro registro.
+  userId String?
+  user   User?  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   createdAt DateTime @default(now())
 
-  @@unique([type, entityId])
+  @@unique([userId, type, entityId])
+  @@index([userId])
   @@map("favorites")
 }
 
@@ -385,10 +473,14 @@ model DiaryEntry {
   projectId String?
   project   Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
 
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([date])
+  @@index([workspaceId])
   @@map("diary_entries")
 }
 
@@ -404,10 +496,14 @@ model KnownError {
   category   String   @default("")
   tags       String[] @default([])
 
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([category])
+  @@index([workspaceId])
   @@map("known_errors")
 }
 
@@ -422,10 +518,14 @@ model WikiPage {
   tags      String[] @default([])
   favorite  Boolean  @default(false)
 
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([category])
+  @@index([workspaceId])
   @@map("wiki_pages")
 }
 
@@ -441,9 +541,13 @@ model Roadmap {
 
   items RoadmapItem[]
 
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([workspaceId])
   @@map("roadmaps")
 }
 

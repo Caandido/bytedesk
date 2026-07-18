@@ -101,22 +101,25 @@ function enrichTemplate(template: RoadmapTemplate): RoadmapTemplate {
 
 /**
  * Regras de acesso a dados do módulo Roadmaps. Mesmo padrão do StudiesService
- * (itens de trilha equivalem aos objetivos de estudo).
+ * (itens de trilha equivalem aos objetivos de estudo). Tudo é escopado por
+ * workspace: a trilha (entidade-raiz) tem `workspaceId`; os itens são escopados
+ * VIA a trilha pai.
  */
 @Injectable()
 export class RoadmapsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  findAll() {
+  findAll(workspaceId: string) {
     return this.prisma.roadmap.findMany({
+      where: { workspaceId },
       orderBy: { updatedAt: 'desc' },
       include: roadmapInclude,
     });
   }
 
-  async findOne(id: string) {
-    const roadmap = await this.prisma.roadmap.findUnique({
-      where: { id },
+  async findOne(id: string, workspaceId: string) {
+    const roadmap = await this.prisma.roadmap.findFirst({
+      where: { id, workspaceId },
       include: roadmapInclude,
     });
     if (!roadmap) {
@@ -125,12 +128,15 @@ export class RoadmapsService {
     return roadmap;
   }
 
-  create(dto: CreateRoadmapDto) {
-    return this.prisma.roadmap.create({ data: dto, include: roadmapInclude });
+  create(dto: CreateRoadmapDto, workspaceId: string) {
+    return this.prisma.roadmap.create({
+      data: { ...dto, workspaceId },
+      include: roadmapInclude,
+    });
   }
 
-  async update(id: string, dto: UpdateRoadmapDto) {
-    await this.ensureRoadmap(id);
+  async update(id: string, dto: UpdateRoadmapDto, workspaceId: string) {
+    await this.ensureRoadmap(id, workspaceId);
     return this.prisma.roadmap.update({
       where: { id },
       data: dto,
@@ -138,8 +144,8 @@ export class RoadmapsService {
     });
   }
 
-  async remove(id: string) {
-    await this.ensureRoadmap(id);
+  async remove(id: string, workspaceId: string) {
+    await this.ensureRoadmap(id, workspaceId);
     return this.prisma.roadmap.delete({ where: { id } });
   }
 
@@ -167,13 +173,14 @@ export class RoadmapsService {
   }
 
   /** Cria uma trilha a partir de um template do catálogo (com seus itens ricos). */
-  async importTemplate(templateId: string) {
+  async importTemplate(templateId: string, workspaceId: string) {
     const template = this.getTemplate(templateId);
     return this.prisma.roadmap.create({
       data: {
         name: template.name,
         description: template.description,
         category: template.category,
+        workspaceId,
         items: {
           create: template.items.map((item, position) => ({
             title: item.title,
@@ -189,8 +196,12 @@ export class RoadmapsService {
 
   // ─── Itens ─────────────────────────────────────────────────────────────────
 
-  async addItem(roadmapId: string, dto: CreateRoadmapItemDto) {
-    await this.ensureRoadmap(roadmapId);
+  async addItem(
+    roadmapId: string,
+    dto: CreateRoadmapItemDto,
+    workspaceId: string,
+  ) {
+    await this.ensureRoadmap(roadmapId, workspaceId);
     const count = await this.prisma.roadmapItem.count({ where: { roadmapId } });
     return this.prisma.roadmapItem.create({
       data: {
@@ -208,8 +219,9 @@ export class RoadmapsService {
     roadmapId: string,
     itemId: string,
     dto: UpdateRoadmapItemDto,
+    workspaceId: string,
   ) {
-    await this.ensureItem(roadmapId, itemId);
+    await this.ensureItem(roadmapId, itemId, workspaceId);
     const data: Prisma.RoadmapItemUncheckedUpdateInput = { ...dto };
     if (dto.links !== undefined) {
       data.links = dto.links as Prisma.InputJsonValue;
@@ -217,16 +229,16 @@ export class RoadmapsService {
     return this.prisma.roadmapItem.update({ where: { id: itemId }, data });
   }
 
-  async removeItem(roadmapId: string, itemId: string) {
-    await this.ensureItem(roadmapId, itemId);
+  async removeItem(roadmapId: string, itemId: string, workspaceId: string) {
+    await this.ensureItem(roadmapId, itemId, workspaceId);
     return this.prisma.roadmapItem.delete({ where: { id: itemId } });
   }
 
   // ─── Helpers ───────────────────────────────────────────────────────────────
 
-  private async ensureRoadmap(id: string): Promise<void> {
-    const exists = await this.prisma.roadmap.findUnique({
-      where: { id },
+  private async ensureRoadmap(id: string, workspaceId: string): Promise<void> {
+    const exists = await this.prisma.roadmap.findFirst({
+      where: { id, workspaceId },
       select: { id: true },
     });
     if (!exists) {
@@ -234,7 +246,13 @@ export class RoadmapsService {
     }
   }
 
-  private async ensureItem(roadmapId: string, itemId: string): Promise<void> {
+  private async ensureItem(
+    roadmapId: string,
+    itemId: string,
+    workspaceId: string,
+  ): Promise<void> {
+    // Garante primeiro que a trilha pai pertence ao workspace ativo.
+    await this.ensureRoadmap(roadmapId, workspaceId);
     const item = await this.prisma.roadmapItem.findUnique({
       where: { id: itemId },
       select: { roadmapId: true },

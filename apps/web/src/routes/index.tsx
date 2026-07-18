@@ -1,6 +1,9 @@
 import { lazy } from 'react';
 import { createBrowserRouter } from 'react-router-dom';
 import { AppLayout } from '@/layouts/AppLayout';
+import { RequireAuth } from '@/features/auth/RequireAuth';
+import { LoginPage } from '@/pages/LoginPage';
+import { RegisterPage } from '@/pages/RegisterPage';
 
 /**
  * Roteador da aplicação. As páginas são carregadas sob demanda (code-splitting via
@@ -120,10 +123,15 @@ const NotFoundPage = lazy(() =>
 );
 
 export const router = createBrowserRouter([
+  { path: '/login', element: <LoginPage /> },
+  { path: '/register', element: <RegisterPage /> },
   {
-    path: '/',
-    element: <AppLayout />,
+    element: <RequireAuth />,
     children: [
+      {
+        path: '/',
+        element: <AppLayout />,
+        children: [
       { index: true, element: <DashboardPage /> },
       { path: 'favoritos', element: <FavoritosPage /> },
       { path: 'estudos', element: <StudiesPage /> },
@@ -158,6 +166,8 @@ export const router = createBrowserRouter([
       { path: 'estatisticas', element: <EstatisticasPage /> },
       { path: 'git', element: <GitPage /> },
       { path: '*', element: <NotFoundPage /> },
+        ],
+      },
     ],
   },
 ]);

@@ -16,21 +16,24 @@ const projectInclude = {
 /**
  * Regras de acesso a dados do módulo Projetos. Mesmo padrão do StudiesService:
  * `ensureProject`/`ensureObjective` centralizam o 404 e os métodos ficam finos.
+ * Toda consulta é escopada por `workspaceId` (multi-tenant): `Project` é a
+ * entidade-raiz e possui a coluna; os objetivos escopam via o projeto pai.
  */
 @Injectable()
 export class ProjectsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  findAll() {
+  findAll(workspaceId: string) {
     return this.prisma.project.findMany({
+      where: { workspaceId },
       orderBy: { updatedAt: 'desc' },
       include: projectInclude,
     });
   }
 
-  async findOne(id: string) {
-    const project = await this.prisma.project.findUnique({
-      where: { id },
+  async findOne(id: string, workspaceId: string) {
+    const project = await this.prisma.project.findFirst({
+      where: { id, workspaceId },
       include: projectInclude,
     });
     if (!project) {
@@ -39,15 +42,15 @@ export class ProjectsService {
     return project;
   }
 
-  create(dto: CreateProjectDto) {
+  create(dto: CreateProjectDto, workspaceId: string) {
     return this.prisma.project.create({
-      data: dto,
+      data: { ...dto, workspaceId },
       include: projectInclude,
     });
   }
 
-  async update(id: string, dto: UpdateProjectDto) {
-    await this.ensureProject(id);
+  async update(id: string, dto: UpdateProjectDto, workspaceId: string) {
+    await this.ensureProject(id, workspaceId);
     return this.prisma.project.update({
       where: { id },
       data: dto,
@@ -55,16 +58,20 @@ export class ProjectsService {
     });
   }
 
-  async remove(id: string) {
-    await this.ensureProject(id);
+  async remove(id: string, workspaceId: string) {
+    await this.ensureProject(id, workspaceId);
     // Objetivos removidos em cascata (onDelete: Cascade).
     return this.prisma.project.delete({ where: { id } });
   }
 
   // ─── Objetivos (checklist) ─────────────────────────────────────────────────
 
-  async addObjective(projectId: string, dto: CreateObjectiveDto) {
-    await this.ensureProject(projectId);
+  async addObjective(
+    projectId: string,
+    dto: CreateObjectiveDto,
+    workspaceId: string,
+  ) {
+    await this.ensureProject(projectId, workspaceId);
     const count = await this.prisma.projectObjective.count({
       where: { projectId },
     });
@@ -77,24 +84,29 @@ export class ProjectsService {
     projectId: string,
     objectiveId: string,
     dto: UpdateObjectiveDto,
+    workspaceId: string,
   ) {
-    await this.ensureObjective(projectId, objectiveId);
+    await this.ensureObjective(projectId, objectiveId, workspaceId);
     return this.prisma.projectObjective.update({
       where: { id: objectiveId },
       data: dto,
     });
   }
 
-  async removeObjective(projectId: string, objectiveId: string) {
-    await this.ensureObjective(projectId, objectiveId);
+  async removeObjective(
+    projectId: string,
+    objectiveId: string,
+    workspaceId: string,
+  ) {
+    await this.ensureObjective(projectId, objectiveId, workspaceId);
     return this.prisma.projectObjective.delete({ where: { id: objectiveId } });
   }
 
   // ─── Helpers ───────────────────────────────────────────────────────────────
 
-  private async ensureProject(id: string): Promise<void> {
-    const exists = await this.prisma.project.findUnique({
-      where: { id },
+  private async ensureProject(id: string, workspaceId: string): Promise<void> {
+    const exists = await this.prisma.project.findFirst({
+      where: { id, workspaceId },
       select: { id: true },
     });
     if (!exists) {
@@ -105,7 +117,10 @@ export class ProjectsService {
   private async ensureObjective(
     projectId: string,
     objectiveId: string,
+    workspaceId: string,
   ): Promise<void> {
+    // Garante que o projeto pai pertence ao workspace ativo antes de checar o objetivo.
+    await this.ensureProject(projectId, workspaceId);
     const objective = await this.prisma.projectObjective.findUnique({
       where: { id: objectiveId },
       select: { projectId: true },

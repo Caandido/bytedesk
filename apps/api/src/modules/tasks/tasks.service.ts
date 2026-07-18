@@ -7,20 +7,23 @@ import { CreateTaskDto, UpdateTaskDto, MoveTaskDto } from './dto/task.dto';
  * Regras de acesso a dados do sub-módulo Tarefas (Kanban). O `move` reindexa as
  * posições das colunas de origem e destino em uma transação, garantindo ordem
  * sequencial e sem colisões após qualquer arraste.
+ *
+ * `Task` é filha de `Project` e não possui `workspaceId` própria: o escopo
+ * multi-tenant é aplicado sempre VIA o projeto pai (`project: { workspaceId }`).
  */
 @Injectable()
 export class TasksService {
   constructor(private readonly prisma: PrismaService) {}
 
-  findAllByProject(projectId: string) {
+  findAllByProject(projectId: string, workspaceId: string) {
     return this.prisma.task.findMany({
-      where: { projectId },
+      where: { projectId, project: { workspaceId } },
       orderBy: [{ status: 'asc' }, { position: 'asc' }],
     });
   }
 
-  async create(projectId: string, dto: CreateTaskDto) {
-    await this.ensureProject(projectId);
+  async create(projectId: string, dto: CreateTaskDto, workspaceId: string) {
+    await this.ensureProject(projectId, workspaceId);
     // Nova tarefa vai para o fim da coluna escolhida.
     const count = await this.prisma.task.count({
       where: { projectId, status: dto.status },
@@ -30,13 +33,18 @@ export class TasksService {
     });
   }
 
-  async update(projectId: string, taskId: string, dto: UpdateTaskDto) {
-    await this.ensureTask(projectId, taskId);
+  async update(
+    projectId: string,
+    taskId: string,
+    dto: UpdateTaskDto,
+    workspaceId: string,
+  ) {
+    await this.ensureTask(projectId, taskId, workspaceId);
     return this.prisma.task.update({ where: { id: taskId }, data: dto });
   }
 
-  async remove(projectId: string, taskId: string) {
-    const task = await this.ensureTask(projectId, taskId);
+  async remove(projectId: string, taskId: string, workspaceId: string) {
+    const task = await this.ensureTask(projectId, taskId, workspaceId);
     await this.prisma.$transaction(async (tx) => {
       await tx.task.delete({ where: { id: taskId } });
       // Compacta as posições da coluna de onde a tarefa saiu.
@@ -49,8 +57,13 @@ export class TasksService {
    * Move a tarefa para `status`/`position` (índice na coluna de destino) e
    * reindexa origem e destino. Retorna o quadro completo do projeto atualizado.
    */
-  async move(projectId: string, taskId: string, dto: MoveTaskDto) {
-    const task = await this.ensureTask(projectId, taskId);
+  async move(
+    projectId: string,
+    taskId: string,
+    dto: MoveTaskDto,
+    workspaceId: string,
+  ) {
+    const task = await this.ensureTask(projectId, taskId, workspaceId);
     const fromStatus = task.status;
     const toStatus = dto.status;
 
@@ -86,7 +99,7 @@ export class TasksService {
       }
     });
 
-    return this.findAllByProject(projectId);
+    return this.findAllByProject(projectId, workspaceId);
   }
 
   // ─── Helpers ───────────────────────────────────────────────────────────────
@@ -114,9 +127,9 @@ export class TasksService {
     );
   }
 
-  private async ensureProject(id: string): Promise<void> {
-    const exists = await this.prisma.project.findUnique({
-      where: { id },
+  private async ensureProject(id: string, workspaceId: string): Promise<void> {
+    const exists = await this.prisma.project.findFirst({
+      where: { id, workspaceId },
       select: { id: true },
     });
     if (!exists) {
@@ -124,9 +137,16 @@ export class TasksService {
     }
   }
 
-  private async ensureTask(projectId: string, taskId: string) {
-    const task = await this.prisma.task.findUnique({ where: { id: taskId } });
-    if (!task || task.projectId !== projectId) {
+  private async ensureTask(
+    projectId: string,
+    taskId: string,
+    workspaceId: string,
+  ) {
+    // Só encontra a tarefa se o projeto pai pertencer ao workspace ativo.
+    const task = await this.prisma.task.findFirst({
+      where: { id: taskId, projectId, project: { workspaceId } },
+    });
+    if (!task) {
       throw new NotFoundException(
         `Tarefa ${taskId} não encontrada no projeto ${projectId}`,
       );

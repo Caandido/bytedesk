@@ -43,7 +43,7 @@ const asDay = (d: Date) => d.toISOString().slice(0, 10);
 export class StatsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getData(): Promise<Stats> {
+  async getData(workspaceId: string): Promise<Stats> {
     const [
       projectCounts,
       studyCounts,
@@ -60,20 +60,58 @@ export class StatsService {
       studyTechs,
       activityDates,
     ] = await Promise.all([
-      this.prisma.project.groupBy({ by: ['status'], _count: { _all: true } }),
-      this.prisma.study.groupBy({ by: ['status'], _count: { _all: true } }),
-      this.prisma.study.aggregate({ _sum: { hoursStudied: true } }),
-      this.prisma.task.groupBy({ by: ['status'], _count: { _all: true } }),
-      this.prisma.task.aggregate({ _sum: { spentHours: true } }),
-      this.prisma.bug.groupBy({ by: ['status'], _count: { _all: true } }),
-      this.prisma.bug.groupBy({ by: ['severity'], _count: { _all: true } }),
-      this.prisma.roadmap.count(),
-      this.prisma.roadmapItem.groupBy({ by: ['done'], _count: { _all: true } }),
-      this.prisma.wikiPage.count(),
-      this.prisma.wikiPage.count({ where: { favorite: true } }),
-      this.prisma.project.findMany({ select: { technologies: true } }),
-      this.prisma.study.findMany({ select: { technology: true } }),
-      this.collectActivityDates(),
+      this.prisma.project.groupBy({
+        by: ['status'],
+        _count: { _all: true },
+        where: { workspaceId },
+      }),
+      this.prisma.study.groupBy({
+        by: ['status'],
+        _count: { _all: true },
+        where: { workspaceId },
+      }),
+      this.prisma.study.aggregate({
+        _sum: { hoursStudied: true },
+        where: { workspaceId },
+      }),
+      // Tarefas/bugs não têm workspaceId próprio: filtram pela relação do projeto.
+      this.prisma.task.groupBy({
+        by: ['status'],
+        _count: { _all: true },
+        where: { project: { workspaceId } },
+      }),
+      this.prisma.task.aggregate({
+        _sum: { spentHours: true },
+        where: { project: { workspaceId } },
+      }),
+      this.prisma.bug.groupBy({
+        by: ['status'],
+        _count: { _all: true },
+        where: { project: { workspaceId } },
+      }),
+      this.prisma.bug.groupBy({
+        by: ['severity'],
+        _count: { _all: true },
+        where: { project: { workspaceId } },
+      }),
+      this.prisma.roadmap.count({ where: { workspaceId } }),
+      // Itens de roadmap filtram pelo workspace do roadmap pai.
+      this.prisma.roadmapItem.groupBy({
+        by: ['done'],
+        _count: { _all: true },
+        where: { roadmap: { workspaceId } },
+      }),
+      this.prisma.wikiPage.count({ where: { workspaceId } }),
+      this.prisma.wikiPage.count({ where: { workspaceId, favorite: true } }),
+      this.prisma.project.findMany({
+        where: { workspaceId },
+        select: { technologies: true },
+      }),
+      this.prisma.study.findMany({
+        where: { workspaceId },
+        select: { technology: true },
+      }),
+      this.collectActivityDates(workspaceId),
     ]);
 
     const projectMap = toMap(projectCounts, 'status');
@@ -128,14 +166,33 @@ export class StatsService {
     };
   }
 
-  private async collectActivityDates(): Promise<Date[]> {
+  private async collectActivityDates(workspaceId: string): Promise<Date[]> {
     const [studies, projects, tasks, bugs, roadmaps, wiki] = await Promise.all([
-      this.prisma.study.findMany({ select: { createdAt: true } }),
-      this.prisma.project.findMany({ select: { createdAt: true } }),
-      this.prisma.task.findMany({ select: { createdAt: true } }),
-      this.prisma.bug.findMany({ select: { createdAt: true } }),
-      this.prisma.roadmap.findMany({ select: { createdAt: true } }),
-      this.prisma.wikiPage.findMany({ select: { createdAt: true } }),
+      this.prisma.study.findMany({
+        where: { workspaceId },
+        select: { createdAt: true },
+      }),
+      this.prisma.project.findMany({
+        where: { workspaceId },
+        select: { createdAt: true },
+      }),
+      // Tarefas/bugs filtram pela relação do projeto do workspace.
+      this.prisma.task.findMany({
+        where: { project: { workspaceId } },
+        select: { createdAt: true },
+      }),
+      this.prisma.bug.findMany({
+        where: { project: { workspaceId } },
+        select: { createdAt: true },
+      }),
+      this.prisma.roadmap.findMany({
+        where: { workspaceId },
+        select: { createdAt: true },
+      }),
+      this.prisma.wikiPage.findMany({
+        where: { workspaceId },
+        select: { createdAt: true },
+      }),
     ]);
     return [...studies, ...projects, ...tasks, ...bugs, ...roadmaps, ...wiki].map(
       (e) => e.createdAt,
