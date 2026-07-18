@@ -24,6 +24,7 @@ export interface ProjectOutletContext {
 const tabs = [
   { to: '', label: 'Visão geral', end: true },
   { to: 'tarefas', label: 'Tarefas', end: false },
+  { to: 'bugs', label: 'Bugs', end: false },
 ];
 
 /**

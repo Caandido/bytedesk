@@ -9,6 +9,7 @@ import { ProjectFormPage } from '@/pages/ProjectFormPage';
 import { ProjectLayout } from '@/pages/project/ProjectLayout';
 import { ProjectOverviewPage } from '@/pages/project/ProjectOverviewPage';
 import { ProjectTasksPage } from '@/pages/project/ProjectTasksPage';
+import { ProjectBugsPage } from '@/pages/project/ProjectBugsPage';
 import { PlaceholderPage } from '@/pages/PlaceholderPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 
@@ -35,6 +36,7 @@ export const router = createBrowserRouter([
         children: [
           { index: true, element: <ProjectOverviewPage /> },
           { path: 'tarefas', element: <ProjectTasksPage /> },
+          { path: 'bugs', element: <ProjectBugsPage /> },
         ],
       },
       {

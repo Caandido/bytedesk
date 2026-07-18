@@ -127,6 +127,7 @@ model Project {
 
   objectives ProjectObjective[]
   tasks      Task[]
+  bugs       Bug[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -187,4 +188,58 @@ model Task {
   @@index([projectId])
   @@index([projectId, status])
   @@map("tasks")
+}
+
+// ─── Sub-módulo Bugs ─────────────────────────────────────────────────────────
+
+/// Gravidade do impacto do bug.
+enum BugSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+/// Prioridade de correção do bug.
+enum BugPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+/// Situação do bug no fluxo de correção.
+enum BugStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+  WONT_FIX
+}
+
+/// Registro de bug de um projeto.
+model Bug {
+  id                String      @id @default(cuid())
+  projectId         String
+  project           Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title             String
+  description       String      @default("")
+  severity          BugSeverity @default(MEDIUM)
+  priority          BugPriority @default(MEDIUM)
+  status            BugStatus   @default(OPEN)
+  version           String      @default("") // versão em que ocorre
+  module            String      @default("") // módulo afetado
+  stepsToReproduce  String      @default("")
+  expectedResult    String      @default("")
+  actualResult      String      @default("")
+  logs              String      @default("")
+  fix               String      @default("") // descrição da correção
+  fixedBy           String      @default("") // quem corrigiu
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([projectId])
+  @@index([projectId, status])
+  @@map("bugs")
 }
