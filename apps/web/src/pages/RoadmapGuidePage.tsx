@@ -87,18 +87,24 @@ export function RoadmapGuidePage() {
             </div>
           </div>
         </div>
-        <Button
-          onClick={handleImport}
-          disabled={importRoadmap.isPending}
-          className="shrink-0"
-        >
-          {importRoadmap.isPending ? (
-            <Loader2 className="size-4 animate-spin" />
-          ) : (
-            <Download className="size-4" />
-          )}
-          Importar para acompanhar
-        </Button>
+        <div className="flex shrink-0 flex-col items-stretch gap-2 sm:flex-row">
+          <a
+            href={t.url}
+            target="_blank"
+            rel="noreferrer"
+            className={cn(buttonVariants({ variant: 'outline' }))}
+          >
+            <ExternalLink className="size-4" /> Ver no roadmap.sh
+          </a>
+          <Button onClick={handleImport} disabled={importRoadmap.isPending}>
+            {importRoadmap.isPending ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <Download className="size-4" />
+            )}
+            Importar para acompanhar
+          </Button>
+        </div>
       </div>
 
       {/* Alternador Mapa mental / Lista */}
@@ -192,6 +198,21 @@ export function RoadmapGuidePage() {
         ))}
       </ol>
       )}
+
+      {/* Créditos — o roadmap oficial é do roadmap.sh (licença de uso pessoal). */}
+      <p className="border-t border-border pt-4 text-center text-xs text-muted-foreground">
+        Inspirado nos roadmaps de{' '}
+        <a
+          href={t.url}
+          target="_blank"
+          rel="noreferrer"
+          className="text-info hover:underline"
+        >
+          roadmap.sh
+        </a>{' '}
+        · © Kamran Ahmed e colaboradores. Esta é uma trilha independente com links
+        para documentação oficial; o conteúdo original está em roadmap.sh.
+      </p>
     </div>
   );
 }

@@ -171,8 +171,18 @@ export function RoadmapsPage() {
         <div>
           <h2 className="text-lg font-semibold">Guias prontos</h2>
           <p className="text-sm text-muted-foreground">
-            Trilhas completas baseadas no roadmap.sh — abra para ver os tópicos
-            com descrição e links, ou importe para acompanhar seu progresso.
+            Trilhas completas inspiradas no{' '}
+            <a
+              href="https://roadmap.sh"
+              target="_blank"
+              rel="noreferrer"
+              className="text-info hover:underline"
+            >
+              roadmap.sh
+            </a>{' '}
+            (© Kamran Ahmed e colaboradores) — abra para ver os tópicos com
+            descrição e links oficiais, ou importe para acompanhar seu progresso.
+            Cada guia traz o link direto para o roadmap original.
           </p>
         </div>
         {templates.isLoading && (
