@@ -1,8 +1,14 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Command } from 'cmdk';
+import { Plus } from 'lucide-react';
 import { navItems } from '@/app/navigation';
 import { useUIStore } from '@/stores/ui';
+
+/** Ações rápidas (criação) exibidas no topo da paleta. */
+const quickActions = [
+  { label: 'Novo estudo', path: '/estudos/novo', icon: Plus },
+];
 
 /**
  * Esqueleto da Pesquisa Global (Ctrl+K). Por enquanto navega entre os módulos;
@@ -42,6 +48,25 @@ export function CommandPalette() {
         <Command.Empty className="px-3 py-6 text-center text-sm text-muted-foreground">
           Nenhum resultado.
         </Command.Empty>
+        <Command.Group
+          heading="Ações"
+          className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-muted-foreground"
+        >
+          {quickActions.map(({ label, path, icon: Icon }) => (
+            <Command.Item
+              key={path}
+              value={label}
+              onSelect={() => {
+                navigate(path);
+                setOpen(false);
+              }}
+              className="flex cursor-pointer items-center gap-3 rounded-md px-3 py-2 text-sm data-[selected=true]:bg-accent data-[selected=true]:text-accent-foreground"
+            >
+              <Icon className="size-4" />
+              {label}
+            </Command.Item>
+          ))}
+        </Command.Group>
         <Command.Group
           heading="Módulos"
           className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-muted-foreground"

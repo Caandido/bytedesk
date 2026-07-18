@@ -1,6 +1,9 @@
 import { createBrowserRouter } from 'react-router-dom';
 import { AppLayout } from '@/layouts/AppLayout';
 import { DashboardPage } from '@/pages/DashboardPage';
+import { StudiesPage } from '@/pages/StudiesPage';
+import { StudyFormPage } from '@/pages/StudyFormPage';
+import { StudyDetailPage } from '@/pages/StudyDetailPage';
 import { PlaceholderPage } from '@/pages/PlaceholderPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 
@@ -14,15 +17,10 @@ export const router = createBrowserRouter([
     element: <AppLayout />,
     children: [
       { index: true, element: <DashboardPage /> },
-      {
-        path: 'estudos',
-        element: (
-          <PlaceholderPage
-            title="Estudos"
-            description="Organize seus estudos com objetivos, checklist e anotações."
-          />
-        ),
-      },
+      { path: 'estudos', element: <StudiesPage /> },
+      { path: 'estudos/novo', element: <StudyFormPage /> },
+      { path: 'estudos/:id', element: <StudyDetailPage /> },
+      { path: 'estudos/:id/editar', element: <StudyFormPage /> },
       {
         path: 'roadmaps',
         element: (

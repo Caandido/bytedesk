@@ -4,8 +4,8 @@
 // da Neon (@prisma/adapter-neon), que dispensa o binário do query engine e conecta
 // via WebSocket — ideal para funções serverless. Ver src/prisma/prisma.service.ts.
 //
-// Por enquanto contém apenas a entidade-exemplo `Note`. Os modelos reais (Study,
-// Project, Bug, Roadmap, ...) serão adicionados conforme os módulos forem
+// A entidade-exemplo `Note` foi mantida como referência de padrão. Os modelos reais
+// (Study, Project, Bug, Roadmap, ...) são adicionados conforme os módulos são
 // implementados. Toda entidade segue a convenção de auditoria: createdAt/updatedAt.
 
 generator client {
@@ -29,4 +29,60 @@ model Note {
   updatedAt DateTime @updatedAt
 
   @@map("notes")
+}
+
+// ─── Módulo Estudos ──────────────────────────────────────────────────────────
+
+/// Situação do estudo no fluxo de aprendizado.
+enum StudyStatus {
+  PLANNED
+  IN_PROGRESS
+  PAUSED
+  COMPLETED
+}
+
+/// Nível de profundidade/domínio do estudo.
+enum StudyLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+/// Um estudo (ex.: "HTML", "React Hooks") com objetivos, anotações e metadados.
+model Study {
+  id           String      @id @default(cuid())
+  name         String
+  category     String      @default("")
+  technology   String      @default("")
+  description  String      @default("")
+  notes        String      @default("") // Anotações em Markdown
+  status       StudyStatus @default(PLANNED)
+  level        StudyLevel  @default(BEGINNER)
+  tags         String[]    @default([])
+  links        Json        @default("[]") // [{ label, url }]
+  hoursStudied Float       @default(0)
+  startDate    DateTime?
+
+  objectives StudyObjective[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("studies")
+}
+
+/// Item de checklist (objetivo) de um estudo.
+model StudyObjective {
+  id       String  @id @default(cuid())
+  studyId  String
+  study    Study   @relation(fields: [studyId], references: [id], onDelete: Cascade)
+  title    String
+  done     Boolean @default(false)
+  position Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([studyId])
+  @@map("study_objectives")
 }
