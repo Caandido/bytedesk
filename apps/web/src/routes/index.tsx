@@ -4,6 +4,7 @@ import { AppLayout } from '@/layouts/AppLayout';
 import { RequireAuth } from '@/features/auth/RequireAuth';
 import { LoginPage } from '@/pages/LoginPage';
 import { RegisterPage } from '@/pages/RegisterPage';
+import { AcceptInvitePage } from '@/pages/AcceptInvitePage';
 
 /**
  * Roteador da aplicação. As páginas são carregadas sob demanda (code-splitting via
@@ -121,6 +122,9 @@ const CalendarioPage = lazy(() =>
 const NotFoundPage = lazy(() =>
   import('@/pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage })),
 );
+const MembersPage = lazy(() =>
+  import('@/pages/MembersPage').then((m) => ({ default: m.MembersPage })),
+);
 
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
@@ -165,9 +169,11 @@ export const router = createBrowserRouter([
       { path: 'calendario', element: <CalendarioPage /> },
       { path: 'estatisticas', element: <EstatisticasPage /> },
       { path: 'git', element: <GitPage /> },
+      { path: 'membros', element: <MembersPage /> },
       { path: '*', element: <NotFoundPage /> },
         ],
       },
+      { path: '/convite/:token', element: <AcceptInvitePage /> },
     ],
   },
 ]);

@@ -1,14 +1,30 @@
-import { useState } from 'react';
-import { Check, ChevronsUpDown, LogOut, Building2 } from 'lucide-react';
+import { useState, type FormEvent } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+  Check,
+  ChevronsUpDown,
+  LogOut,
+  Building2,
+  Users,
+  Plus,
+  Loader2,
+} from 'lucide-react';
 import { useAuthStore } from '@/stores/auth';
 import { cn } from '@/lib/utils';
+import { Dialog } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useCreateWorkspace } from '@/features/team/useTeam';
 
 /**
  * Menu de conta na Topbar: mostra o workspace ativo, permite trocar entre os
- * workspaces do usuário (recarrega os dados escopados) e fazer logout.
+ * workspaces do usuário, criar um novo, gerir membros e fazer logout.
  */
 export function WorkspaceMenu() {
   const [open, setOpen] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
+  const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
   const workspaces = useAuthStore((s) => s.workspaces);
   const activeWorkspaceId = useAuthStore((s) => s.activeWorkspaceId);
@@ -16,6 +32,7 @@ export function WorkspaceMenu() {
   const logout = useAuthStore((s) => s.logout);
 
   const active = workspaces.find((w) => w.id === activeWorkspaceId);
+  const canManage = active?.role === 'OWNER' || active?.role === 'ADMIN';
 
   return (
     <div className="relative">
@@ -52,7 +69,7 @@ export function WorkspaceMenu() {
               </p>
             </div>
 
-            <div className="max-h-64 overflow-y-auto py-1">
+            <div className="max-h-52 overflow-y-auto py-1">
               <p className="px-3 py-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
                 Workspaces
               </p>
@@ -90,6 +107,35 @@ export function WorkspaceMenu() {
                 role="menuitem"
                 onClick={() => {
                   setOpen(false);
+                  setCreateOpen(true);
+                }}
+                className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors hover:bg-accent"
+              >
+                <Plus className="size-4" />
+                Criar workspace
+              </button>
+              {canManage && (
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setOpen(false);
+                    navigate('/membros');
+                  }}
+                  className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors hover:bg-accent"
+                >
+                  <Users className="size-4" />
+                  Gerenciar membros
+                </button>
+              )}
+            </div>
+
+            <div className="border-t border-border py-1">
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  setOpen(false);
                   logout();
                 }}
                 className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-danger transition-colors hover:bg-accent"
@@ -101,6 +147,76 @@ export function WorkspaceMenu() {
           </div>
         </>
       )}
+
+      <CreateWorkspaceDialog
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+      />
     </div>
+  );
+}
+
+function CreateWorkspaceDialog({
+  open,
+  onClose,
+}: {
+  open: boolean;
+  onClose: () => void;
+}) {
+  const navigate = useNavigate();
+  const createWorkspace = useCreateWorkspace();
+  const [name, setName] = useState('');
+
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    if (!name.trim()) return;
+    createWorkspace.mutate(
+      { name: name.trim() },
+      {
+        onSuccess: () => {
+          setName('');
+          onClose();
+          navigate('/');
+        },
+      },
+    );
+  };
+
+  return (
+    <Dialog open={open} onClose={onClose} title="Criar workspace">
+      <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+        <div className="space-y-1.5">
+          <Label htmlFor="ws-name">Nome do workspace</Label>
+          <Input
+            id="ws-name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Ex.: Time do App, Freelas, Estudos…"
+            maxLength={120}
+            autoFocus
+          />
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Um workspace novo começa vazio e isolado. Você entra como dono e pode
+          convidar outras pessoas.
+        </p>
+        {createWorkspace.isError && (
+          <p className="text-sm text-danger">
+            {(createWorkspace.error as Error).message}
+          </p>
+        )}
+        <div className="flex justify-end gap-2">
+          <Button type="button" variant="outline" size="sm" onClick={onClose}>
+            Cancelar
+          </Button>
+          <Button type="submit" size="sm" disabled={createWorkspace.isPending}>
+            {createWorkspace.isPending && (
+              <Loader2 className="size-4 animate-spin" />
+            )}
+            Criar
+          </Button>
+        </div>
+      </form>
+    </Dialog>
   );
 }

@@ -40,6 +40,7 @@ model User {
   memberships     Membership[]
   ownedWorkspaces Workspace[] // workspaces em que é dono (Workspace.owner)
   favorites       Favorite[]
+  sentInvites     Invite[] // convites que este usuário enviou
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -57,6 +58,7 @@ model Workspace {
   owner   User?   @relation(fields: [ownerId], references: [id], onDelete: SetNull)
 
   memberships Membership[]
+  invites     Invite[]
 
   // Dados isolados por workspace (entidades-raiz de cada módulo).
   notes        Note[]
@@ -88,6 +90,28 @@ model Membership {
   @@unique([userId, workspaceId])
   @@index([workspaceId])
   @@map("memberships")
+}
+
+/// Convite para entrar num workspace, aceito por link (token). O e-mail é um
+/// rótulo/hint; a posse do token é o segredo que autoriza a aceitação.
+model Invite {
+  id          String         @id @default(cuid())
+  workspaceId String
+  workspace   Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  email       String         @default("")
+  role        MembershipRole @default(MEMBER)
+  token       String         @unique
+  invitedById String
+  invitedBy   User           @relation(fields: [invitedById], references: [id], onDelete: Cascade)
+  expiresAt   DateTime
+  acceptedAt  DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([workspaceId])
+  @@index([token])
+  @@map("invites")
 }
 
 model Note {

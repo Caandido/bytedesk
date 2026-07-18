@@ -52,6 +52,8 @@ interface AuthState {
   setSession: (session: Session) => void;
   /** Troca o workspace ativo e limpa o cache para recarregar os dados escopados. */
   setActiveWorkspace: (id: string) => void;
+  /** Adiciona (ou atualiza) um workspace na lista — ex.: ao criar ou aceitar convite. */
+  addWorkspace: (workspace: Workspace, activate?: boolean) => void;
   /** Encerra a sessão e limpa o cache. */
   logout: () => void;
 }
@@ -109,6 +111,24 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     persist({ token, user, workspaces, activeWorkspaceId: id });
     queryClient.clear();
     set({ activeWorkspaceId: id });
+  },
+
+  addWorkspace: (workspace, activate = true) => {
+    const { token, user, workspaces, activeWorkspaceId } = get();
+    if (!token || !user) return;
+    const exists = workspaces.some((w) => w.id === workspace.id);
+    const nextWorkspaces = exists
+      ? workspaces.map((w) => (w.id === workspace.id ? workspace : w))
+      : [...workspaces, workspace];
+    const nextActive = activate ? workspace.id : activeWorkspaceId;
+    persist({
+      token,
+      user,
+      workspaces: nextWorkspaces,
+      activeWorkspaceId: nextActive ?? workspace.id,
+    });
+    if (activate) queryClient.clear();
+    set({ workspaces: nextWorkspaces, activeWorkspaceId: nextActive });
   },
 
   logout: () => {
