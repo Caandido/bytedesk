@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import {
   Link,
   NavLink,
@@ -10,6 +11,7 @@ import type { Project } from '@devflow/shared';
 import { cn } from '@/lib/utils';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { PageLoader } from '@/components/PageLoader';
 import {
   ProjectStatusBadge,
   ProjectPriorityBadge,
@@ -128,7 +130,9 @@ export function ProjectLayout() {
         ))}
       </div>
 
-      <Outlet context={{ project: p } satisfies ProjectOutletContext} />
+      <Suspense fallback={<PageLoader />}>
+        <Outlet context={{ project: p } satisfies ProjectOutletContext} />
+      </Suspense>
     </div>
   );
 }

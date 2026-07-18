@@ -1,24 +1,76 @@
+import { lazy } from 'react';
 import { createBrowserRouter } from 'react-router-dom';
 import { AppLayout } from '@/layouts/AppLayout';
-import { DashboardPage } from '@/pages/DashboardPage';
-import { StudiesPage } from '@/pages/StudiesPage';
-import { StudyFormPage } from '@/pages/StudyFormPage';
-import { StudyDetailPage } from '@/pages/StudyDetailPage';
-import { ProjectsPage } from '@/pages/ProjectsPage';
-import { ProjectFormPage } from '@/pages/ProjectFormPage';
-import { ProjectLayout } from '@/pages/project/ProjectLayout';
-import { ProjectOverviewPage } from '@/pages/project/ProjectOverviewPage';
-import { ProjectTasksPage } from '@/pages/project/ProjectTasksPage';
-import { ProjectBugsPage } from '@/pages/project/ProjectBugsPage';
-import { ProjectVersionsPage } from '@/pages/project/ProjectVersionsPage';
-import { ProjectDocsPage } from '@/pages/project/ProjectDocsPage';
-import { PlaceholderPage } from '@/pages/PlaceholderPage';
-import { NotFoundPage } from '@/pages/NotFoundPage';
 
 /**
- * Roteador da aplicação. O Dashboard já é real (prova de integração); os demais
- * módulos usam páginas placeholder até serem implementados.
+ * Roteador da aplicação. As páginas são carregadas sob demanda (code-splitting via
+ * React.lazy) — cada rota vira um chunk próprio, então libs pesadas (react-markdown,
+ * @dnd-kit) só baixam quando a página que as usa é aberta. O AppLayout (shell) é
+ * eager; os `Suspense` ficam no AppLayout e no ProjectLayout.
+ *
+ * As páginas usam named exports, daí o wrapper `.then(m => ({ default: m.X }))`.
  */
+const DashboardPage = lazy(() =>
+  import('@/pages/DashboardPage').then((m) => ({ default: m.DashboardPage })),
+);
+const StudiesPage = lazy(() =>
+  import('@/pages/StudiesPage').then((m) => ({ default: m.StudiesPage })),
+);
+const StudyFormPage = lazy(() =>
+  import('@/pages/StudyFormPage').then((m) => ({ default: m.StudyFormPage })),
+);
+const StudyDetailPage = lazy(() =>
+  import('@/pages/StudyDetailPage').then((m) => ({
+    default: m.StudyDetailPage,
+  })),
+);
+const ProjectsPage = lazy(() =>
+  import('@/pages/ProjectsPage').then((m) => ({ default: m.ProjectsPage })),
+);
+const ProjectFormPage = lazy(() =>
+  import('@/pages/ProjectFormPage').then((m) => ({
+    default: m.ProjectFormPage,
+  })),
+);
+const ProjectLayout = lazy(() =>
+  import('@/pages/project/ProjectLayout').then((m) => ({
+    default: m.ProjectLayout,
+  })),
+);
+const ProjectOverviewPage = lazy(() =>
+  import('@/pages/project/ProjectOverviewPage').then((m) => ({
+    default: m.ProjectOverviewPage,
+  })),
+);
+const ProjectTasksPage = lazy(() =>
+  import('@/pages/project/ProjectTasksPage').then((m) => ({
+    default: m.ProjectTasksPage,
+  })),
+);
+const ProjectBugsPage = lazy(() =>
+  import('@/pages/project/ProjectBugsPage').then((m) => ({
+    default: m.ProjectBugsPage,
+  })),
+);
+const ProjectVersionsPage = lazy(() =>
+  import('@/pages/project/ProjectVersionsPage').then((m) => ({
+    default: m.ProjectVersionsPage,
+  })),
+);
+const ProjectDocsPage = lazy(() =>
+  import('@/pages/project/ProjectDocsPage').then((m) => ({
+    default: m.ProjectDocsPage,
+  })),
+);
+const PlaceholderPage = lazy(() =>
+  import('@/pages/PlaceholderPage').then((m) => ({
+    default: m.PlaceholderPage,
+  })),
+);
+const NotFoundPage = lazy(() =>
+  import('@/pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage })),
+);
+
 export const router = createBrowserRouter([
   {
     path: '/',
