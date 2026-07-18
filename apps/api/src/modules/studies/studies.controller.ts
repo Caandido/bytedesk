@@ -13,6 +13,8 @@ import {
   UpdateStudyDto,
   CreateObjectiveDto,
   UpdateObjectiveDto,
+  CreateSectionDto,
+  UpdateSectionDto,
 } from './dto/study.dto';
 
 /**
@@ -70,5 +72,29 @@ export class StudiesController {
     @Param('objectiveId') objectiveId: string,
   ) {
     return this.studiesService.removeObjective(id, objectiveId);
+  }
+
+  // ─── Seções ──────────────────────────────────────────────────────────────
+
+  @Post(':id/sections')
+  addSection(@Param('id') id: string, @Body() dto: CreateSectionDto) {
+    return this.studiesService.addSection(id, dto);
+  }
+
+  @Patch(':id/sections/:sectionId')
+  updateSection(
+    @Param('id') id: string,
+    @Param('sectionId') sectionId: string,
+    @Body() dto: UpdateSectionDto,
+  ) {
+    return this.studiesService.updateSection(id, sectionId, dto);
+  }
+
+  @Delete(':id/sections/:sectionId')
+  removeSection(
+    @Param('id') id: string,
+    @Param('sectionId') sectionId: string,
+  ) {
+    return this.studiesService.removeSection(id, sectionId);
   }
 }

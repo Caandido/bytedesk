@@ -64,11 +64,28 @@ model Study {
   startDate    DateTime?
 
   objectives StudyObjective[]
+  sections   StudySection[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("studies")
+}
+
+/// Seção de conteúdo de um estudo (card com título + Markdown, ex.: código).
+model StudySection {
+  id       String @id @default(cuid())
+  studyId  String
+  study    Study  @relation(fields: [studyId], references: [id], onDelete: Cascade)
+  title    String
+  content  String @default("") // Markdown (suporta código com realce)
+  position Int    @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([studyId])
+  @@map("study_sections")
 }
 
 /// Item de checklist (objetivo) de um estudo.

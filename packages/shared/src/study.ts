@@ -62,6 +62,32 @@ export type CreateObjectiveInput = z.input<typeof createObjectiveSchema>;
 export type UpdateObjectiveInput = z.input<typeof updateObjectiveSchema>;
 export type StudyObjective = z.infer<typeof objectiveSchema>;
 
+// ─── Seções (cards de conteúdo Markdown) ─────────────────────────────────────
+
+/** Payload para criar uma seção. */
+export const createSectionSchema = z.object({
+  title: z.string().trim().min(1, 'O título é obrigatório').max(200),
+  content: z.string().max(200_000).optional().default(''),
+});
+
+/** Payload para atualizar uma seção. */
+export const updateSectionSchema = createSectionSchema.partial();
+
+/** Entidade completa de seção retornada pela API. */
+export const sectionSchema = z
+  .object({
+    id: idSchema,
+    studyId: idSchema,
+    title: z.string(),
+    content: z.string(),
+    position: z.number().int(),
+  })
+  .merge(timestampsSchema);
+
+export type CreateSectionInput = z.input<typeof createSectionSchema>;
+export type UpdateSectionInput = z.input<typeof updateSectionSchema>;
+export type StudySection = z.infer<typeof sectionSchema>;
+
 // ─── Estudo ──────────────────────────────────────────────────────────────────
 
 /** Payload para criar um estudo. Só `name` é obrigatório; o resto tem default. */
@@ -99,6 +125,7 @@ export const studySchema = z
     hoursStudied: z.number(),
     startDate: z.coerce.date().nullable(),
     objectives: z.array(objectiveSchema).optional(),
+    sections: z.array(sectionSchema).optional(),
   })
   .merge(timestampsSchema);
 

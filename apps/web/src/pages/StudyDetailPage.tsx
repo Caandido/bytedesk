@@ -25,6 +25,7 @@ import { Badge } from '@/components/ui/badge';
 import { Markdown } from '@/components/Markdown';
 import { ObjectiveChecklist } from '@/components/ObjectiveChecklist';
 import { StudyStatusBadge, StudyLevelBadge } from '@/features/studies/StudyMeta';
+import { StudySections } from '@/features/studies/StudySections';
 import {
   useStudy,
   useDeleteStudy,
@@ -166,6 +167,7 @@ export function StudyDetailPage() {
       )}
 
       <ObjectivesSection study={s} />
+      <StudySections study={s} />
       <NotesSection study={s} />
     </div>
   );

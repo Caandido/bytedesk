@@ -2,10 +2,13 @@ import { apiFetch } from '@/services/api';
 import type {
   Study,
   StudyObjective,
+  StudySection,
   CreateStudyInput,
   UpdateStudyInput,
   CreateObjectiveInput,
   UpdateObjectiveInput,
+  CreateSectionInput,
+  UpdateSectionInput,
 } from '@devflow/shared';
 
 /**
@@ -53,4 +56,25 @@ export const studiesApi = {
       `/studies/${studyId}/objectives/${objectiveId}`,
       { method: 'DELETE' },
     ),
+
+  addSection: (studyId: string, input: CreateSectionInput) =>
+    apiFetch<StudySection>(`/studies/${studyId}/sections`, {
+      method: 'POST',
+      body: JSON.stringify(input),
+    }),
+
+  updateSection: (
+    studyId: string,
+    sectionId: string,
+    input: UpdateSectionInput,
+  ) =>
+    apiFetch<StudySection>(`/studies/${studyId}/sections/${sectionId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(input),
+    }),
+
+  removeSection: (studyId: string, sectionId: string) =>
+    apiFetch<StudySection>(`/studies/${studyId}/sections/${sectionId}`, {
+      method: 'DELETE',
+    }),
 };

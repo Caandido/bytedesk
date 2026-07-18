@@ -6,11 +6,14 @@ import {
   UpdateStudyDto,
   CreateObjectiveDto,
   UpdateObjectiveDto,
+  CreateSectionDto,
+  UpdateSectionDto,
 } from './dto/study.dto';
 
-/** Sempre trazemos os objetivos ordenados junto do estudo. */
+/** Sempre trazemos objetivos e seções ordenados junto do estudo. */
 const studyInclude = {
   objectives: { orderBy: { position: 'asc' } },
+  sections: { orderBy: { position: 'asc' } },
 } satisfies Prisma.StudyInclude;
 
 /**
@@ -89,6 +92,33 @@ export class StudiesService {
     return this.prisma.studyObjective.delete({ where: { id: objectiveId } });
   }
 
+  // ─── Seções (cards de conteúdo) ────────────────────────────────────────────
+
+  async addSection(studyId: string, dto: CreateSectionDto) {
+    await this.ensureStudy(studyId);
+    const count = await this.prisma.studySection.count({ where: { studyId } });
+    return this.prisma.studySection.create({
+      data: { studyId, title: dto.title, content: dto.content, position: count },
+    });
+  }
+
+  async updateSection(
+    studyId: string,
+    sectionId: string,
+    dto: UpdateSectionDto,
+  ) {
+    await this.ensureSection(studyId, sectionId);
+    return this.prisma.studySection.update({
+      where: { id: sectionId },
+      data: dto,
+    });
+  }
+
+  async removeSection(studyId: string, sectionId: string) {
+    await this.ensureSection(studyId, sectionId);
+    return this.prisma.studySection.delete({ where: { id: sectionId } });
+  }
+
   // ─── Helpers ───────────────────────────────────────────────────────────────
 
   /**
@@ -127,6 +157,21 @@ export class StudiesService {
     if (!objective || objective.studyId !== studyId) {
       throw new NotFoundException(
         `Objetivo ${objectiveId} não encontrado no estudo ${studyId}`,
+      );
+    }
+  }
+
+  private async ensureSection(
+    studyId: string,
+    sectionId: string,
+  ): Promise<void> {
+    const section = await this.prisma.studySection.findUnique({
+      where: { id: sectionId },
+      select: { studyId: true },
+    });
+    if (!section || section.studyId !== studyId) {
+      throw new NotFoundException(
+        `Seção ${sectionId} não encontrada no estudo ${studyId}`,
       );
     }
   }

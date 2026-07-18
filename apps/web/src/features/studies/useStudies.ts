@@ -8,6 +8,8 @@ import type {
   UpdateStudyInput,
   CreateObjectiveInput,
   UpdateObjectiveInput,
+  CreateSectionInput,
+  UpdateSectionInput,
 } from '@devflow/shared';
 import { studiesApi } from './studies.api';
 
@@ -90,6 +92,40 @@ export function useDeleteObjective(studyId: string) {
   return useMutation({
     mutationFn: (objectiveId: string) =>
       studiesApi.removeObjective(studyId, objectiveId),
+    onSuccess: () => invalidateStudy(qc, studyId),
+  });
+}
+
+// ─── Seções ────────────────────────────────────────────────────────────────
+
+export function useAddSection(studyId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: CreateSectionInput) =>
+      studiesApi.addSection(studyId, input),
+    onSuccess: () => invalidateStudy(qc, studyId),
+  });
+}
+
+export function useUpdateSection(studyId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      sectionId,
+      input,
+    }: {
+      sectionId: string;
+      input: UpdateSectionInput;
+    }) => studiesApi.updateSection(studyId, sectionId, input),
+    onSuccess: () => invalidateStudy(qc, studyId),
+  });
+}
+
+export function useDeleteSection(studyId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (sectionId: string) =>
+      studiesApi.removeSection(studyId, sectionId),
     onSuccess: () => invalidateStudy(qc, studyId),
   });
 }
