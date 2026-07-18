@@ -16,6 +16,7 @@ import { WikiModule } from './modules/wiki/wiki.module';
 import { StatsModule } from './modules/stats/stats.module';
 import { DiaryModule } from './modules/diary/diary.module';
 import { IdeasModule } from './modules/ideas/ideas.module';
+import { ErrorsModule } from './modules/errors/errors.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { IdeasModule } from './modules/ideas/ideas.module';
     StatsModule,
     DiaryModule,
     IdeasModule,
+    ErrorsModule,
   ],
 })
 export class AppModule {}

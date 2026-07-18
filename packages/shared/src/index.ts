@@ -24,3 +24,4 @@ export * from './wiki';
 export * from './stats';
 export * from './diary';
 export * from './idea';
+export * from './error';

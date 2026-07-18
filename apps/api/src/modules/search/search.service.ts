@@ -20,7 +20,7 @@ export class SearchService {
 
     const like: Prisma.StringFilter = { contains: term, mode: 'insensitive' };
 
-    const [studies, projects, tasks, bugs, roadmaps, wikiPages] =
+    const [studies, projects, tasks, bugs, roadmaps, wikiPages, knownErrors] =
       await Promise.all([
       this.prisma.study.findMany({
         where: {
@@ -82,6 +82,14 @@ export class SearchService {
         take: PER_TYPE,
         select: { id: true, title: true, category: true },
       }),
+      this.prisma.knownError.findMany({
+        where: {
+          OR: [{ title: like }, { technology: like }, { category: like }],
+        },
+        orderBy: { updatedAt: 'desc' },
+        take: PER_TYPE,
+        select: { id: true, title: true, technology: true, category: true },
+      }),
     ]);
 
     return [
@@ -122,6 +130,12 @@ export class SearchService {
         id: w.id,
         title: w.title,
         subtitle: w.category || 'Conhecimento',
+      })),
+      ...knownErrors.map<SearchResult>((e) => ({
+        type: 'error',
+        id: e.id,
+        title: e.title,
+        subtitle: e.technology || e.category || 'Erro',
       })),
     ];
   }

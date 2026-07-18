@@ -14,6 +14,7 @@ export const searchResultTypeSchema = z.enum([
   'bug',
   'roadmap',
   'wiki',
+  'error',
 ]);
 export type SearchResultType = z.infer<typeof searchResultTypeSchema>;
 
@@ -38,4 +39,5 @@ export const SEARCH_TYPE_LABELS: Record<SearchResultType, string> = {
   bug: 'Bugs',
   roadmap: 'Roadmaps',
   wiki: 'Conhecimento',
+  error: 'Banco de Erros',
 };

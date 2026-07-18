@@ -37,6 +37,7 @@ const RESULT_ICON: Record<SearchResultType, LucideIcon> = {
   bug: BugIcon,
   roadmap: MapIcon,
   wiki: BookOpen,
+  error: BugIcon,
 };
 
 const RESULT_ORDER: SearchResultType[] = [
@@ -46,6 +47,7 @@ const RESULT_ORDER: SearchResultType[] = [
   'bug',
   'roadmap',
   'wiki',
+  'error',
 ];
 
 function routeFor(r: SearchResult): string {
@@ -62,6 +64,8 @@ function routeFor(r: SearchResult): string {
       return `/roadmaps/${r.id}`;
     case 'wiki':
       return '/conhecimento';
+    case 'error':
+      return '/erros';
   }
 }
 

@@ -349,6 +349,25 @@ model DiaryEntry {
   @@map("diary_entries")
 }
 
+// ─── Módulo Banco de Erros ───────────────────────────────────────────────────
+
+/// Erro conhecido, com motivo e solução — base pesquisável.
+model KnownError {
+  id         String   @id @default(cuid())
+  title      String // o erro
+  cause      String   @default("") // motivo
+  solution   String   @default("") // solução
+  technology String   @default("")
+  category   String   @default("")
+  tags       String[] @default([])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([category])
+  @@map("known_errors")
+}
+
 // ─── Módulo Conhecimento (Wiki) ──────────────────────────────────────────────
 
 /// Página da wiki pessoal (conhecimento) em Markdown.
