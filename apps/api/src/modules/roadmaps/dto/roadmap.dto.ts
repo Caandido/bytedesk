@@ -4,6 +4,7 @@ import {
   updateRoadmapSchema,
   createRoadmapItemSchema,
   updateRoadmapItemSchema,
+  reorderRoadmapItemsSchema,
   importRoadmapSchema,
 } from '@devflow/shared';
 
@@ -15,5 +16,8 @@ export class CreateRoadmapItemDto extends createZodDto(
 ) {}
 export class UpdateRoadmapItemDto extends createZodDto(
   updateRoadmapItemSchema,
+) {}
+export class ReorderRoadmapItemsDto extends createZodDto(
+  reorderRoadmapItemsSchema,
 ) {}
 export class ImportRoadmapDto extends createZodDto(importRoadmapSchema) {}

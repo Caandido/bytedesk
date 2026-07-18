@@ -234,6 +234,34 @@ export class RoadmapsService {
     return this.prisma.roadmapItem.delete({ where: { id: itemId } });
   }
 
+  /**
+   * Reordena os itens da trilha (arrastar-e-soltar): grava a posição de cada id
+   * conforme a ordem recebida. Só considera itens que realmente pertencem à
+   * trilha (defesa contra ids de outra trilha/workspace).
+   */
+  async reorderItems(
+    roadmapId: string,
+    itemIds: string[],
+    workspaceId: string,
+  ) {
+    await this.ensureRoadmap(roadmapId, workspaceId);
+    const owned = await this.prisma.roadmapItem.findMany({
+      where: { roadmapId },
+      select: { id: true },
+    });
+    const validIds = new Set(owned.map((i) => i.id));
+    const ordered = itemIds.filter((id) => validIds.has(id));
+    await this.prisma.$transaction(
+      ordered.map((id, index) =>
+        this.prisma.roadmapItem.update({
+          where: { id },
+          data: { position: index },
+        }),
+      ),
+    );
+    return this.findOne(roadmapId, workspaceId);
+  }
+
   // ─── Helpers ───────────────────────────────────────────────────────────────
 
   private async ensureRoadmap(id: string, workspaceId: string): Promise<void> {

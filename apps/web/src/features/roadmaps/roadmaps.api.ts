@@ -8,6 +8,7 @@ import type {
   UpdateRoadmapInput,
   CreateRoadmapItemInput,
   UpdateRoadmapItemInput,
+  ReorderRoadmapItemsInput,
 } from '@devflow/shared';
 
 /** Service da feature Roadmaps. Reusa `apiFetch`. */
@@ -62,5 +63,11 @@ export const roadmapsApi = {
   removeItem: (roadmapId: string, itemId: string) =>
     apiFetch<RoadmapItem>(`/roadmaps/${roadmapId}/items/${itemId}`, {
       method: 'DELETE',
+    }),
+
+  reorderItems: (roadmapId: string, input: ReorderRoadmapItemsInput) =>
+    apiFetch<Roadmap>(`/roadmaps/${roadmapId}/items/reorder`, {
+      method: 'PATCH',
+      body: JSON.stringify(input),
     }),
 };

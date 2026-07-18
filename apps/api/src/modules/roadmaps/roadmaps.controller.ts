@@ -13,6 +13,7 @@ import {
   UpdateRoadmapDto,
   CreateRoadmapItemDto,
   UpdateRoadmapItemDto,
+  ReorderRoadmapItemsDto,
   ImportRoadmapDto,
 } from './dto/roadmap.dto';
 import { WorkspaceId } from '../auth/auth.decorators';
@@ -82,6 +83,16 @@ export class RoadmapsController {
     @WorkspaceId() workspaceId: string,
   ) {
     return this.roadmapsService.addItem(id, dto, workspaceId);
+  }
+
+  // Rota estática antes de ':itemId' para não ser capturada como parâmetro.
+  @Patch(':id/items/reorder')
+  reorderItems(
+    @Param('id') id: string,
+    @Body() dto: ReorderRoadmapItemsDto,
+    @WorkspaceId() workspaceId: string,
+  ) {
+    return this.roadmapsService.reorderItems(id, dto.itemIds, workspaceId);
   }
 
   @Patch(':id/items/:itemId')

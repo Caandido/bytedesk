@@ -39,8 +39,14 @@ export const roadmapItemSchema = z
   })
   .merge(timestampsSchema);
 
+/** Payload para reordenar os itens (arrastar-e-soltar): ids na nova ordem. */
+export const reorderRoadmapItemsSchema = z.object({
+  itemIds: z.array(idSchema).min(1),
+});
+
 export type CreateRoadmapItemInput = z.input<typeof createRoadmapItemSchema>;
 export type UpdateRoadmapItemInput = z.input<typeof updateRoadmapItemSchema>;
+export type ReorderRoadmapItemsInput = z.input<typeof reorderRoadmapItemsSchema>;
 export type RoadmapItem = z.infer<typeof roadmapItemSchema>;
 
 // ─── Trilha ──────────────────────────────────────────────────────────────────

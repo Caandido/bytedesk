@@ -8,6 +8,7 @@ import type {
   UpdateRoadmapInput,
   CreateRoadmapItemInput,
   UpdateRoadmapItemInput,
+  Roadmap,
 } from '@devflow/shared';
 import { roadmapsApi } from './roadmaps.api';
 
@@ -113,6 +114,42 @@ export function useDeleteRoadmapItem(roadmapId: string) {
   return useMutation({
     mutationFn: (itemId: string) => roadmapsApi.removeItem(roadmapId, itemId),
     onSuccess: () => invalidate(qc, roadmapId),
+  });
+}
+
+/**
+ * Reordena os itens (arrastar-e-soltar) com atualização otimista: aplica a nova
+ * ordem no cache na hora, faz rollback em erro e revalida ao final.
+ */
+export function useReorderRoadmapItems(roadmapId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (itemIds: string[]) =>
+      roadmapsApi.reorderItems(roadmapId, { itemIds }),
+    onMutate: async (itemIds) => {
+      await qc.cancelQueries({ queryKey: roadmapsKeys.detail(roadmapId) });
+      const prev = qc.getQueryData<Roadmap>(roadmapsKeys.detail(roadmapId));
+      qc.setQueryData<Roadmap>(roadmapsKeys.detail(roadmapId), (old) => {
+        if (!old?.items) return old;
+        const byId = new Map(old.items.map((i) => [i.id, i]));
+        const items = itemIds
+          .map((id, index) => {
+            const item = byId.get(id);
+            return item ? { ...item, position: index } : null;
+          })
+          .filter((i): i is NonNullable<typeof i> => i !== null);
+        return { ...old, items };
+      });
+      return { prev };
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.prev) {
+        qc.setQueryData(roadmapsKeys.detail(roadmapId), ctx.prev);
+      }
+    },
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: roadmapsKeys.detail(roadmapId) });
+    },
   });
 }
 

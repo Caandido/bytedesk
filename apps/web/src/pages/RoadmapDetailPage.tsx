@@ -12,6 +12,23 @@ import {
   Network,
   List,
 } from 'lucide-react';
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  KeyboardSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  useSortable,
+  sortableKeyboardCoordinates,
+  arrayMove,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import type { Roadmap, RoadmapItem } from '@devflow/shared';
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -25,6 +42,7 @@ import {
   useDeleteRoadmap,
   useAddRoadmapItem,
   useUpdateRoadmapItem,
+  useReorderRoadmapItems,
 } from '@/features/roadmaps/useRoadmaps';
 import { FavoriteButton } from '@/features/favorites/FavoriteButton';
 
@@ -192,14 +210,31 @@ function RoadmapItems({
   const progress = items.length ? Math.round((done / items.length) * 100) : 0;
 
   const addItem = useAddRoadmapItem(roadmap.id);
-  const updateItem = useUpdateRoadmapItem(roadmap.id);
+  const reorder = useReorderRoadmapItems(roadmap.id);
   const [title, setTitle] = useState('');
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
 
   const handleAdd = (e: FormEvent) => {
     e.preventDefault();
     const trimmed = title.trim();
     if (!trimmed) return;
     addItem.mutate({ title: trimmed }, { onSuccess: () => setTitle('') });
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const ids = items.map((i) => i.id);
+    const oldIndex = ids.indexOf(active.id as string);
+    const newIndex = ids.indexOf(over.id as string);
+    if (oldIndex < 0 || newIndex < 0) return;
+    reorder.mutate(arrayMove(ids, oldIndex, newIndex));
   };
 
   return (
@@ -221,6 +256,12 @@ function RoadmapItems({
             />
           </div>
         )}
+        {items.length > 1 && (
+          <p className="mt-2 text-xs text-muted-foreground">
+            Arraste pela alça para reordenar · clique num item para editar
+            descrição, tempo e links.
+          </p>
+        )}
       </CardHeader>
       <CardContent className="space-y-3">
         {items.length === 0 && (
@@ -229,70 +270,27 @@ function RoadmapItems({
           </p>
         )}
 
-        <ul className="space-y-1.5">
-          {items.map((item) => (
-            <li
-              key={item.id}
-              className="flex items-start gap-3 rounded-md border border-border p-3"
-            >
-              <GripVertical className="mt-0.5 size-4 shrink-0 text-muted-foreground/50" />
-              <input
-                type="checkbox"
-                checked={item.done}
-                onChange={() =>
-                  updateItem.mutate({
-                    itemId: item.id,
-                    input: { done: !item.done },
-                  })
-                }
-                className="mt-0.5 size-4 shrink-0 cursor-pointer accent-primary"
-                aria-label={item.title}
-              />
-              <button
-                type="button"
-                onClick={() => onEditItem(item)}
-                className="min-w-0 flex-1 text-left"
-              >
-                <div className="flex items-center gap-2">
-                  <span
-                    className={cn(
-                      'text-sm font-medium',
-                      item.done && 'text-muted-foreground line-through',
-                    )}
-                  >
-                    {item.title}
-                  </span>
-                  {item.recommendedTime && (
-                    <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <Clock className="size-3" /> {item.recommendedTime}
-                    </span>
-                  )}
-                </div>
-                {item.description && (
-                  <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                    {item.description}
-                  </p>
-                )}
-              </button>
-              {item.links.length > 0 && (
-                <div className="flex shrink-0 flex-wrap justify-end gap-1">
-                  {item.links.map((link, i) => (
-                    <a
-                      key={i}
-                      href={link.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      onClick={(e) => e.stopPropagation()}
-                      className="flex items-center gap-1 rounded bg-muted px-1.5 py-0.5 text-xs text-info hover:underline"
-                    >
-                      <ExternalLink className="size-3" /> {link.label}
-                    </a>
-                  ))}
-                </div>
-              )}
-            </li>
-          ))}
-        </ul>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext
+            items={items.map((i) => i.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            <ul className="space-y-1.5">
+              {items.map((item) => (
+                <SortableRoadmapItem
+                  key={item.id}
+                  roadmapId={roadmap.id}
+                  item={item}
+                  onEditItem={onEditItem}
+                />
+              ))}
+            </ul>
+          </SortableContext>
+        </DndContext>
 
         <form onSubmit={handleAdd} className="flex gap-2">
           <Input
@@ -311,5 +309,97 @@ function RoadmapItems({
         </form>
       </CardContent>
     </Card>
+  );
+}
+
+/** Item da trilha arrastável: a alça reordena; o resto continua clicável. */
+function SortableRoadmapItem({
+  roadmapId,
+  item,
+  onEditItem,
+}: {
+  roadmapId: string;
+  item: RoadmapItem;
+  onEditItem: (item: RoadmapItem) => void;
+}) {
+  const updateItem = useUpdateRoadmapItem(roadmapId);
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id: item.id });
+
+  const style = {
+    transform: CSS.Translate.toString(transform),
+    transition,
+  };
+
+  return (
+    <li
+      ref={setNodeRef}
+      style={style}
+      className={cn(
+        'flex items-start gap-3 rounded-md border border-border bg-card p-3',
+        isDragging && 'relative z-10 opacity-80 shadow-lg',
+      )}
+    >
+      <span
+        {...attributes}
+        {...listeners}
+        role="button"
+        aria-label="Arrastar para reordenar"
+        className="mt-0.5 shrink-0 cursor-grab touch-none text-muted-foreground/50 transition-colors hover:text-foreground active:cursor-grabbing"
+      >
+        <GripVertical className="size-4" />
+      </span>
+      <input
+        type="checkbox"
+        checked={item.done}
+        onChange={() =>
+          updateItem.mutate({ itemId: item.id, input: { done: !item.done } })
+        }
+        className="mt-0.5 size-4 shrink-0 cursor-pointer accent-primary"
+        aria-label={item.title}
+      />
+      <button
+        type="button"
+        onClick={() => onEditItem(item)}
+        className="min-w-0 flex-1 text-left"
+      >
+        <div className="flex items-center gap-2">
+          <span
+            className={cn(
+              'text-sm font-medium',
+              item.done && 'text-muted-foreground line-through',
+            )}
+          >
+            {item.title}
+          </span>
+          {item.recommendedTime && (
+            <span className="flex items-center gap-1 text-xs text-muted-foreground">
+              <Clock className="size-3" /> {item.recommendedTime}
+            </span>
+          )}
+        </div>
+        {item.description && (
+          <p className="mt-0.5 truncate text-xs text-muted-foreground">
+            {item.description}
+          </p>
+        )}
+      </button>
+      {item.links.length > 0 && (
+        <div className="flex shrink-0 flex-wrap justify-end gap-1">
+          {item.links.map((link, i) => (
+            <a
+              key={i}
+              href={link.url}
+              target="_blank"
+              rel="noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="flex items-center gap-1 rounded bg-muted px-1.5 py-0.5 text-xs text-info hover:underline"
+            >
+              <ExternalLink className="size-3" /> {link.label}
+            </a>
+          ))}
+        </div>
+      )}
+    </li>
   );
 }
