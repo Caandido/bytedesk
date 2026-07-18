@@ -80,6 +80,11 @@ const ConhecimentoPage = lazy(() =>
     default: m.ConhecimentoPage,
   })),
 );
+const EstatisticasPage = lazy(() =>
+  import('@/pages/EstatisticasPage').then((m) => ({
+    default: m.EstatisticasPage,
+  })),
+);
 const PlaceholderPage = lazy(() =>
   import('@/pages/PlaceholderPage').then((m) => ({
     default: m.PlaceholderPage,
@@ -118,15 +123,7 @@ export const router = createBrowserRouter([
       { path: 'roadmaps/:id', element: <RoadmapDetailPage /> },
       { path: 'roadmaps/:id/editar', element: <RoadmapFormPage /> },
       { path: 'conhecimento', element: <ConhecimentoPage /> },
-      {
-        path: 'estatisticas',
-        element: (
-          <PlaceholderPage
-            title="Estatísticas"
-            description="Métricas de produtividade e progresso."
-          />
-        ),
-      },
+      { path: 'estatisticas', element: <EstatisticasPage /> },
       {
         path: 'git',
         element: (

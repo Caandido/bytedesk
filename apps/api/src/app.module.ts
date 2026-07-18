@@ -13,6 +13,7 @@ import { DocsModule } from './modules/docs/docs.module';
 import { VersionsModule } from './modules/versions/versions.module';
 import { RoadmapsModule } from './modules/roadmaps/roadmaps.module';
 import { WikiModule } from './modules/wiki/wiki.module';
+import { StatsModule } from './modules/stats/stats.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { WikiModule } from './modules/wiki/wiki.module';
     VersionsModule,
     RoadmapsModule,
     WikiModule,
+    StatsModule,
   ],
 })
 export class AppModule {}
