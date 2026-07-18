@@ -11,6 +11,7 @@ import {
   GripVertical,
   Network,
   List,
+  ChevronRight,
 } from 'lucide-react';
 import {
   DndContext,
@@ -36,7 +37,10 @@ import { Button, buttonVariants } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { RoadmapItemDialog } from '@/features/roadmaps/RoadmapItemDialog';
-import { RoadmapMindmap } from '@/features/roadmaps/RoadmapMindmap';
+import {
+  RoadmapMindmap,
+  type MindmapNode,
+} from '@/features/roadmaps/RoadmapMindmap';
 import {
   useRoadmap,
   useDeleteRoadmap,
@@ -170,17 +174,7 @@ export function RoadmapDetailPage() {
         <div className="space-y-2">
           <RoadmapMindmap
             name={r.name}
-            items={(r.items ?? [])
-              .filter((i) => !i.parentId)
-              .sort((a, b) => a.position - b.position)
-              .map((i) => ({
-                title: i.title,
-                done: i.done,
-                children: (r.items ?? [])
-                  .filter((c) => c.parentId === i.id)
-                  .sort((a, b) => a.position - b.position)
-                  .map((c) => ({ title: c.title, done: c.done })),
-              }))}
+            items={toMindmapTree(r.items ?? [], null)}
           />
           <p className="text-center text-xs text-muted-foreground">
             Espinha = tópicos; ramos pontilhados = sub-itens. Concluídos ficam
@@ -202,6 +196,21 @@ export function RoadmapDetailPage() {
       />
     </div>
   );
+}
+
+/** Monta a árvore (recursiva) de nós do mapa mental a partir dos itens achatados. */
+function toMindmapTree(
+  items: RoadmapItem[],
+  parentId: string | null,
+): MindmapNode[] {
+  return items
+    .filter((i) => (i.parentId ?? null) === parentId)
+    .sort((a, b) => a.position - b.position)
+    .map((i) => ({
+      title: i.title,
+      done: i.done,
+      children: toMindmapTree(items, i.id),
+    }));
 }
 
 // ─── Itens ───────────────────────────────────────────────────────────────────
@@ -250,16 +259,6 @@ function RoadmapItems({
     reorder.mutate(arrayMove(ids, oldIndex, newIndex));
   };
 
-  const handleTopDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    if (!over || active.id === over.id) return;
-    reorderGroup(
-      topItems.map((i) => i.id),
-      active.id as string,
-      over.id as string,
-    );
-  };
-
   return (
     <Card>
       <CardHeader>
@@ -293,30 +292,15 @@ function RoadmapItems({
           </p>
         )}
 
-        <DndContext
+        <ItemTree
+          roadmapId={roadmap.id}
+          items={topItems}
+          childrenOf={childrenOf}
+          onEditItem={onEditItem}
           sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragEnd={handleTopDragEnd}
-        >
-          <SortableContext
-            items={topItems.map((i) => i.id)}
-            strategy={verticalListSortingStrategy}
-          >
-            <ul className="space-y-2">
-              {topItems.map((item) => (
-                <SortableRoadmapItem
-                  key={item.id}
-                  roadmapId={roadmap.id}
-                  item={item}
-                  onEditItem={onEditItem}
-                  sensors={sensors}
-                  childItems={childrenOf(item.id)}
-                  onReorderGroup={reorderGroup}
-                />
-              ))}
-            </ul>
-          </SortableContext>
-        </DndContext>
+          onReorderGroup={reorderGroup}
+          depth={0}
+        />
 
         <form onSubmit={handleAdd} className="flex gap-2">
           <Input
@@ -420,95 +404,93 @@ function ItemRow({
   );
 }
 
-/** Tópico raiz arrastável, com bloco de sub-itens (aninhamento de 1 nível). */
-function SortableRoadmapItem({
+/** Profundidade máxima de aninhamento (evita indentação absurda). */
+const MAX_DEPTH = 4;
+
+/** Lista arrastável de irmãos (um grupo). Recursiva via RoadmapNode. */
+function ItemTree({
   roadmapId,
-  item,
+  items,
+  childrenOf,
   onEditItem,
   sensors,
-  childItems,
   onReorderGroup,
+  depth,
 }: {
   roadmapId: string;
-  item: RoadmapItem;
+  items: RoadmapItem[];
+  childrenOf: (parentId: string) => RoadmapItem[];
   onEditItem: (item: RoadmapItem) => void;
   sensors: ReturnType<typeof useSensors>;
-  childItems: RoadmapItem[];
   onReorderGroup: (ids: string[], activeId: string, overId: string) => void;
+  depth: number;
 }) {
-  const updateItem = useUpdateRoadmapItem(roadmapId);
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id: item.id });
-  const style = { transform: CSS.Translate.toString(transform), transition };
-
-  const handleChildDragEnd = (event: DragEndEvent) => {
+  const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
     onReorderGroup(
-      childItems.map((c) => c.id),
+      items.map((i) => i.id),
       active.id as string,
       over.id as string,
     );
   };
 
   return (
-    <li
-      ref={setNodeRef}
-      style={style}
-      className={cn(isDragging && 'relative z-10 opacity-80')}
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragEnd={handleDragEnd}
     >
-      <ItemRow
-        item={item}
-        onEditItem={onEditItem}
-        onToggle={() =>
-          updateItem.mutate({ itemId: item.id, input: { done: !item.done } })
-        }
-        handleProps={{ ...attributes, ...listeners }}
-      />
-      <div className="ml-6 mt-1.5 space-y-1.5 border-l-2 border-border/60 pl-3">
-        {childItems.length > 0 && (
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={handleChildDragEnd}
-          >
-            <SortableContext
-              items={childItems.map((c) => c.id)}
-              strategy={verticalListSortingStrategy}
-            >
-              <ul className="space-y-1.5">
-                {childItems.map((child) => (
-                  <SortableSubItem
-                    key={child.id}
-                    roadmapId={roadmapId}
-                    item={child}
-                    onEditItem={onEditItem}
-                  />
-                ))}
-              </ul>
-            </SortableContext>
-          </DndContext>
-        )}
-        <AddSubItem roadmapId={roadmapId} parentId={item.id} />
-      </div>
-    </li>
+      <SortableContext
+        items={items.map((i) => i.id)}
+        strategy={verticalListSortingStrategy}
+      >
+        <ul className={depth === 0 ? 'space-y-2' : 'space-y-1.5'}>
+          {items.map((item) => (
+            <RoadmapNode
+              key={item.id}
+              roadmapId={roadmapId}
+              item={item}
+              childItems={childrenOf(item.id)}
+              childrenOf={childrenOf}
+              onEditItem={onEditItem}
+              sensors={sensors}
+              onReorderGroup={onReorderGroup}
+              depth={depth}
+            />
+          ))}
+        </ul>
+      </SortableContext>
+    </DndContext>
   );
 }
 
-/** Sub-item arrastável (dentro de um tópico raiz). */
-function SortableSubItem({
+/** Nó recursivo: seta esconder/revelar + linha do item + sub-árvore + adicionar. */
+function RoadmapNode({
   roadmapId,
   item,
+  childItems,
+  childrenOf,
   onEditItem,
+  sensors,
+  onReorderGroup,
+  depth,
 }: {
   roadmapId: string;
   item: RoadmapItem;
+  childItems: RoadmapItem[];
+  childrenOf: (parentId: string) => RoadmapItem[];
   onEditItem: (item: RoadmapItem) => void;
+  sensors: ReturnType<typeof useSensors>;
+  onReorderGroup: (ids: string[], activeId: string, overId: string) => void;
+  depth: number;
 }) {
   const updateItem = useUpdateRoadmapItem(roadmapId);
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: item.id });
   const style = { transform: CSS.Translate.toString(transform), transition };
+  const [expanded, setExpanded] = useState(true);
+  const hasChildren = childItems.length > 0;
 
   return (
     <li
@@ -516,26 +498,75 @@ function SortableSubItem({
       style={style}
       className={cn(isDragging && 'relative z-10 opacity-80')}
     >
-      <ItemRow
-        nested
-        item={item}
-        onEditItem={onEditItem}
-        onToggle={() =>
-          updateItem.mutate({ itemId: item.id, input: { done: !item.done } })
-        }
-        handleProps={{ ...attributes, ...listeners }}
-      />
+      <div className="flex items-start gap-1">
+        {/* Seta de esconder/revelar — só quando há sub-itens. */}
+        {hasChildren ? (
+          <button
+            type="button"
+            onClick={() => setExpanded((v) => !v)}
+            aria-label={expanded ? 'Esconder sub-itens' : 'Revelar sub-itens'}
+            aria-expanded={expanded}
+            className="mt-2.5 shrink-0 rounded p-0.5 text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <ChevronRight
+              className={cn(
+                'size-4 transition-transform',
+                expanded && 'rotate-90',
+              )}
+            />
+          </button>
+        ) : (
+          <span className="w-5 shrink-0" aria-hidden />
+        )}
+        <div className="min-w-0 flex-1">
+          <ItemRow
+            item={item}
+            nested={depth > 0}
+            onEditItem={onEditItem}
+            onToggle={() =>
+              updateItem.mutate({ itemId: item.id, input: { done: !item.done } })
+            }
+            handleProps={{ ...attributes, ...listeners }}
+          />
+        </div>
+      </div>
+
+      {/* Região de sub-itens: escondida quando colapsada. */}
+      {(!hasChildren || expanded) && (
+        <div className="ml-6 mt-1.5 space-y-1.5 border-l-2 border-border/60 pl-3">
+          {hasChildren && expanded && (
+            <ItemTree
+              roadmapId={roadmapId}
+              items={childItems}
+              childrenOf={childrenOf}
+              onEditItem={onEditItem}
+              sensors={sensors}
+              onReorderGroup={onReorderGroup}
+              depth={depth + 1}
+            />
+          )}
+          {depth < MAX_DEPTH && (
+            <AddSubItem
+              roadmapId={roadmapId}
+              parentId={item.id}
+              onAdded={() => setExpanded(true)}
+            />
+          )}
+        </div>
+      )}
     </li>
   );
 }
 
-/** Botão/campo inline para adicionar um sub-item a um tópico raiz. */
+/** Botão/campo inline para adicionar um sub-item a qualquer item. */
 function AddSubItem({
   roadmapId,
   parentId,
+  onAdded,
 }: {
   roadmapId: string;
   parentId: string;
+  onAdded?: () => void;
 }) {
   const addItem = useAddRoadmapItem(roadmapId);
   const [open, setOpen] = useState(false);
@@ -545,7 +576,15 @@ function AddSubItem({
     e.preventDefault();
     const trimmed = title.trim();
     if (!trimmed) return;
-    addItem.mutate({ title: trimmed, parentId }, { onSuccess: () => setTitle('') });
+    addItem.mutate(
+      { title: trimmed, parentId },
+      {
+        onSuccess: () => {
+          setTitle('');
+          onAdded?.();
+        },
+      },
+    );
   };
 
   if (!open) {
