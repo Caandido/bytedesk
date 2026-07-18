@@ -13,3 +13,12 @@ createRoot(rootElement).render(
     <App />
   </StrictMode>,
 );
+
+// Registra o service worker (PWA — instalável e com fallback offline).
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    void navigator.serviceWorker.register('/sw.js').catch(() => {
+      /* SW indisponível — app segue funcionando normalmente. */
+    });
+  });
+}
