@@ -19,3 +19,4 @@ export * from './dashboard';
 export * from './search';
 export * from './doc';
 export * from './version';
+export * from './roadmap';

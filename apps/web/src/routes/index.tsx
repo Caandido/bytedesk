@@ -62,6 +62,19 @@ const ProjectDocsPage = lazy(() =>
     default: m.ProjectDocsPage,
   })),
 );
+const RoadmapsPage = lazy(() =>
+  import('@/pages/RoadmapsPage').then((m) => ({ default: m.RoadmapsPage })),
+);
+const RoadmapFormPage = lazy(() =>
+  import('@/pages/RoadmapFormPage').then((m) => ({
+    default: m.RoadmapFormPage,
+  })),
+);
+const RoadmapDetailPage = lazy(() =>
+  import('@/pages/RoadmapDetailPage').then((m) => ({
+    default: m.RoadmapDetailPage,
+  })),
+);
 const PlaceholderPage = lazy(() =>
   import('@/pages/PlaceholderPage').then((m) => ({
     default: m.PlaceholderPage,
@@ -95,15 +108,10 @@ export const router = createBrowserRouter([
           { path: 'docs', element: <ProjectDocsPage /> },
         ],
       },
-      {
-        path: 'roadmaps',
-        element: (
-          <PlaceholderPage
-            title="Roadmaps"
-            description="Trilhas de aprendizado com progresso e recursos."
-          />
-        ),
-      },
+      { path: 'roadmaps', element: <RoadmapsPage /> },
+      { path: 'roadmaps/novo', element: <RoadmapFormPage /> },
+      { path: 'roadmaps/:id', element: <RoadmapDetailPage /> },
+      { path: 'roadmaps/:id/editar', element: <RoadmapFormPage /> },
       {
         path: 'conhecimento',
         element: (

@@ -7,6 +7,7 @@ import {
   FolderKanban,
   ListChecks,
   Bug as BugIcon,
+  Map as MapIcon,
   Loader2,
   type LucideIcon,
 } from 'lucide-react';
@@ -23,6 +24,7 @@ import { useSearch } from '@/features/search/useSearch';
 const quickActions = [
   { label: 'Novo estudo', path: '/estudos/novo', icon: Plus },
   { label: 'Novo projeto', path: '/projetos/novo', icon: Plus },
+  { label: 'Novo roadmap', path: '/roadmaps/novo', icon: Plus },
 ];
 
 const RESULT_ICON: Record<SearchResultType, LucideIcon> = {
@@ -30,9 +32,16 @@ const RESULT_ICON: Record<SearchResultType, LucideIcon> = {
   project: FolderKanban,
   task: ListChecks,
   bug: BugIcon,
+  roadmap: MapIcon,
 };
 
-const RESULT_ORDER: SearchResultType[] = ['study', 'project', 'task', 'bug'];
+const RESULT_ORDER: SearchResultType[] = [
+  'study',
+  'project',
+  'task',
+  'bug',
+  'roadmap',
+];
 
 function routeFor(r: SearchResult): string {
   switch (r.type) {
@@ -44,6 +53,8 @@ function routeFor(r: SearchResult): string {
       return `/projetos/${r.projectId}/tarefas`;
     case 'bug':
       return `/projetos/${r.projectId}/bugs`;
+    case 'roadmap':
+      return `/roadmaps/${r.id}`;
   }
 }
 

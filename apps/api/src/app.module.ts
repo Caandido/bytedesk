@@ -11,6 +11,7 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { SearchModule } from './modules/search/search.module';
 import { DocsModule } from './modules/docs/docs.module';
 import { VersionsModule } from './modules/versions/versions.module';
+import { RoadmapsModule } from './modules/roadmaps/roadmaps.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { VersionsModule } from './modules/versions/versions.module';
     SearchModule,
     DocsModule,
     VersionsModule,
+    RoadmapsModule,
   ],
 })
 export class AppModule {}

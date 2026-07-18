@@ -20,7 +20,7 @@ export class SearchService {
 
     const like: Prisma.StringFilter = { contains: term, mode: 'insensitive' };
 
-    const [studies, projects, tasks, bugs] = await Promise.all([
+    const [studies, projects, tasks, bugs, roadmaps] = await Promise.all([
       this.prisma.study.findMany({
         where: {
           OR: [
@@ -69,6 +69,12 @@ export class SearchService {
           project: { select: { name: true } },
         },
       }),
+      this.prisma.roadmap.findMany({
+        where: { OR: [{ name: like }, { category: like }] },
+        orderBy: { updatedAt: 'desc' },
+        take: PER_TYPE,
+        select: { id: true, name: true, category: true },
+      }),
     ]);
 
     return [
@@ -97,6 +103,12 @@ export class SearchService {
         title: b.title,
         subtitle: b.project.name,
         projectId: b.projectId,
+      })),
+      ...roadmaps.map<SearchResult>((r) => ({
+        type: 'roadmap',
+        id: r.id,
+        title: r.name,
+        subtitle: r.category || 'Roadmap',
       })),
     ];
   }

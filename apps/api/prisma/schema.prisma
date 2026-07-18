@@ -262,6 +262,43 @@ model ProjectDoc {
   @@map("project_docs")
 }
 
+// ─── Módulo Roadmaps ─────────────────────────────────────────────────────────
+
+/// Trilha de aprendizado com itens ordenados e progresso.
+model Roadmap {
+  id          String  @id @default(cuid())
+  name        String
+  description String  @default("")
+  category    String  @default("")
+  tags        String[] @default([])
+
+  items RoadmapItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("roadmaps")
+}
+
+/// Item de uma trilha (ex.: "HTML", "React") com recursos e tempo recomendado.
+model RoadmapItem {
+  id              String  @id @default(cuid())
+  roadmapId       String
+  roadmap         Roadmap @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
+  title           String
+  description     String  @default("")
+  links           Json    @default("[]") // [{ label, url }]
+  recommendedTime String  @default("") // ex.: "2 semanas"
+  done            Boolean @default(false)
+  position        Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([roadmapId])
+  @@map("roadmap_items")
+}
+
 /// Uma versão registrada de um projeto (base do changelog).
 model ProjectVersion {
   id           String    @id @default(cuid())
