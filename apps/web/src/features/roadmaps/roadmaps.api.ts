@@ -3,6 +3,7 @@ import type {
   Roadmap,
   RoadmapItem,
   RoadmapTemplateSummary,
+  RoadmapTemplateDetail,
   CreateRoadmapInput,
   UpdateRoadmapInput,
   CreateRoadmapItemInput,
@@ -15,6 +16,9 @@ export const roadmapsApi = {
 
   templates: () =>
     apiFetch<RoadmapTemplateSummary[]>('/roadmaps/templates'),
+
+  template: (templateId: string) =>
+    apiFetch<RoadmapTemplateDetail>(`/roadmaps/templates/${templateId}`),
 
   import: (templateId: string) =>
     apiFetch<Roadmap>('/roadmaps/import', {

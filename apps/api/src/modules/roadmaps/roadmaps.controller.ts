@@ -35,6 +35,11 @@ export class RoadmapsController {
     return this.roadmapsService.listTemplates();
   }
 
+  @Get('templates/:templateId')
+  getTemplate(@Param('templateId') templateId: string) {
+    return this.roadmapsService.getTemplate(templateId);
+  }
+
   @Post('import')
   importTemplate(@Body() dto: ImportRoadmapDto) {
     return this.roadmapsService.importTemplate(dto.templateId);

@@ -67,24 +67,33 @@ export class RoadmapsService {
       name: t.name,
       category: t.category,
       description: t.description,
+      url: t.url,
       itemCount: t.items.length,
     }));
   }
 
-  /** Cria uma trilha a partir de um template do catálogo (com seus itens). */
-  async importTemplate(templateId: string) {
+  /** Retorna um template completo (com itens, descrições e links). */
+  getTemplate(templateId: string) {
     const template = ROADMAP_CATALOG.find((t) => t.id === templateId);
     if (!template) {
       throw new NotFoundException(`Template ${templateId} não encontrado`);
     }
+    return template;
+  }
+
+  /** Cria uma trilha a partir de um template do catálogo (com seus itens ricos). */
+  async importTemplate(templateId: string) {
+    const template = this.getTemplate(templateId);
     return this.prisma.roadmap.create({
       data: {
         name: template.name,
         description: template.description,
         category: template.category,
         items: {
-          create: template.items.map((title, position) => ({
-            title,
+          create: template.items.map((item, position) => ({
+            title: item.title,
+            description: item.description ?? '',
+            links: (item.links ?? []) as unknown as Prisma.InputJsonValue,
             position,
           })),
         },

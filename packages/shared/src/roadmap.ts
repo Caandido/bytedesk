@@ -80,9 +80,29 @@ export const roadmapTemplateSchema = z.object({
   name: z.string(),
   category: z.string(),
   description: z.string(),
+  url: z.string(),
   itemCount: z.number().int(),
 });
 export type RoadmapTemplateSummary = z.infer<typeof roadmapTemplateSchema>;
+
+/** Item de um template (com descrição e links). */
+export const roadmapTemplateItemSchema = z.object({
+  title: z.string(),
+  description: z.string().optional(),
+  links: z.array(linkSchema).optional(),
+});
+export type RoadmapTemplateItem = z.infer<typeof roadmapTemplateItemSchema>;
+
+/** Template completo (guia) com todos os itens. */
+export const roadmapTemplateDetailSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  category: z.string(),
+  description: z.string(),
+  url: z.string(),
+  items: z.array(roadmapTemplateItemSchema),
+});
+export type RoadmapTemplateDetail = z.infer<typeof roadmapTemplateDetailSchema>;
 
 /** Payload para importar um template do catálogo. */
 export const importRoadmapSchema = z.object({

@@ -1,14 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import {
-  Plus,
-  Search,
-  Trash2,
-  Loader2,
-  Map,
-  ListChecks,
-  Download,
-} from 'lucide-react';
+import { Plus, Search, Trash2, Loader2, Map, ListChecks } from 'lucide-react';
 import type { Roadmap } from '@devflow/shared';
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
@@ -16,8 +8,11 @@ import { Button, buttonVariants } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { ImportRoadmapDialog } from '@/features/roadmaps/ImportRoadmapDialog';
-import { useRoadmaps, useDeleteRoadmap } from '@/features/roadmaps/useRoadmaps';
+import {
+  useRoadmaps,
+  useDeleteRoadmap,
+  useRoadmapTemplates,
+} from '@/features/roadmaps/useRoadmaps';
 
 type SortKey = 'recent' | 'name' | 'progress';
 
@@ -25,11 +20,11 @@ type SortKey = 'recent' | 'name' | 'progress';
 export function RoadmapsPage() {
   const roadmaps = useRoadmaps();
   const deleteRoadmap = useDeleteRoadmap();
+  const templates = useRoadmapTemplates();
 
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('ALL');
   const [sort, setSort] = useState<SortKey>('recent');
-  const [importOpen, setImportOpen] = useState(false);
 
   const categories = useMemo(() => {
     const set = new Set<string>();
@@ -85,20 +80,10 @@ export function RoadmapsPage() {
             Trilhas de aprendizado com itens, recursos e progresso.
           </p>
         </div>
-        <div className="flex shrink-0 gap-2">
-          <Button variant="outline" onClick={() => setImportOpen(true)}>
-            <Download className="size-4" /> Importar
-          </Button>
-          <Link to="/roadmaps/novo" className={cn(buttonVariants())}>
-            <Plus className="size-4" /> Novo roadmap
-          </Link>
-        </div>
+        <Link to="/roadmaps/novo" className={cn(buttonVariants(), 'shrink-0')}>
+          <Plus className="size-4" /> Novo roadmap
+        </Link>
       </div>
-
-      <ImportRoadmapDialog
-        open={importOpen}
-        onClose={() => setImportOpen(false)}
-      />
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <div className="relative flex-1">
@@ -180,6 +165,52 @@ export function RoadmapsPage() {
           ))}
         </div>
       )}
+
+      {/* Guias prontos (roadmap.sh) */}
+      <div className="space-y-3 pt-4">
+        <div>
+          <h2 className="text-lg font-semibold">Guias prontos</h2>
+          <p className="text-sm text-muted-foreground">
+            Trilhas completas baseadas no roadmap.sh — abra para ver os tópicos
+            com descrição e links, ou importe para acompanhar seu progresso.
+          </p>
+        </div>
+        {templates.isLoading && (
+          <p className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Loader2 className="size-4 animate-spin" /> Carregando guias…
+          </p>
+        )}
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {(templates.data ?? []).map((template) => (
+            <Link
+              key={template.id}
+              to={`/roadmaps/guia/${template.id}`}
+              className="group block"
+            >
+              <Card className="h-full transition-colors group-hover:border-primary/50">
+                <CardContent className="flex h-full flex-col gap-2 p-4">
+                  <div className="flex items-center gap-2">
+                    <Map className="size-4 shrink-0 text-primary" />
+                    <h3 className="font-semibold leading-tight">
+                      {template.name}
+                    </h3>
+                  </div>
+                  <p className="line-clamp-2 text-xs text-muted-foreground">
+                    {template.description}
+                  </p>
+                  <div className="mt-auto flex items-center gap-2 pt-1">
+                    <Badge variant="outline">{template.category}</Badge>
+                    <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <ListChecks className="size-3.5" /> {template.itemCount}{' '}
+                      tópicos
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

@@ -80,6 +80,11 @@ const RoadmapDetailPage = lazy(() =>
     default: m.RoadmapDetailPage,
   })),
 );
+const RoadmapGuidePage = lazy(() =>
+  import('@/pages/RoadmapGuidePage').then((m) => ({
+    default: m.RoadmapGuidePage,
+  })),
+);
 const ConhecimentoPage = lazy(() =>
   import('@/pages/ConhecimentoPage').then((m) => ({
     default: m.ConhecimentoPage,
@@ -130,6 +135,7 @@ export const router = createBrowserRouter([
       },
       { path: 'roadmaps', element: <RoadmapsPage /> },
       { path: 'roadmaps/novo', element: <RoadmapFormPage /> },
+      { path: 'roadmaps/guia/:id', element: <RoadmapGuidePage /> },
       { path: 'roadmaps/:id', element: <RoadmapDetailPage /> },
       { path: 'roadmaps/:id/editar', element: <RoadmapFormPage /> },
       { path: 'conhecimento', element: <ConhecimentoPage /> },

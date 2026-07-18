@@ -46,6 +46,16 @@ export function useRoadmapTemplates() {
   });
 }
 
+/** Detalhe de um template (guia completo com itens/descrições/links). */
+export function useRoadmapTemplate(templateId: string | undefined) {
+  return useQuery({
+    queryKey: ['roadmap-template', templateId],
+    queryFn: () => roadmapsApi.template(templateId as string),
+    enabled: Boolean(templateId),
+    staleTime: Infinity,
+  });
+}
+
 export function useImportRoadmap() {
   const qc = useQueryClient();
   return useMutation({
