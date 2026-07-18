@@ -12,6 +12,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import type { DashboardData } from '@devflow/shared';
+import { cn } from '@/lib/utils';
 import {
   Card,
   CardContent,
@@ -136,12 +137,21 @@ function StatCard({
   danger?: boolean;
 }) {
   return (
-    <Card>
+    <Card className="hover-lift hover:border-foreground/20 hover:shadow-md">
       <CardContent className="p-4">
-        <Icon
-          className={danger ? 'size-5 text-danger' : 'size-5 text-primary'}
-        />
-        <p className="mt-2 text-2xl font-bold tabular-nums">{value}</p>
+        <div
+          className={cn(
+            'flex size-9 items-center justify-center rounded-lg border',
+            danger
+              ? 'border-danger/20 bg-danger/10 text-danger'
+              : 'border-border bg-muted text-foreground',
+          )}
+        >
+          <Icon className="size-5" />
+        </div>
+        <p className="text-gradient mt-3 text-2xl font-bold tabular-nums">
+          {value}
+        </p>
         <p className="text-xs text-muted-foreground">{label}</p>
         {hint && <p className="mt-0.5 text-[11px] text-muted-foreground">{hint}</p>}
       </CardContent>
