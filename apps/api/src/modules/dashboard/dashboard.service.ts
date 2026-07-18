@@ -2,6 +2,9 @@ import { Injectable } from '@nestjs/common';
 import type { DashboardData } from '@devflow/shared';
 import { PrismaService } from '../../prisma/prisma.service';
 
+/** Linha do mapa de frequência: um dia (à meia-noite UTC) e a contagem de eventos. */
+type ActivityRow = { day: Date; count: number };
+
 /** Linha de contagem agrupada por status (`groupBy` do Prisma). */
 type StatusCount<T extends string> = { status: T; _count: { _all: number } };
 
@@ -40,6 +43,7 @@ export class DashboardService {
       recentStudies,
       upcomingTasks,
       recentBugs,
+      activity,
     ] = await Promise.all([
       this.prisma.study.groupBy({ by: ['status'], _count: { _all: true } }),
       this.prisma.study.aggregate({ _sum: { hoursStudied: true } }),
@@ -68,6 +72,7 @@ export class DashboardService {
         take: 6,
         include: { project: { select: { name: true } } },
       }),
+      this.activityByDay(),
     ]);
 
     return {
@@ -129,6 +134,38 @@ export class DashboardService {
         projectId: b.projectId,
         projectName: b.project.name,
       })),
+      activity,
     };
+  }
+
+  /**
+   * Frequência de atividade dos últimos ~12 meses (mapa estilo GitHub): unifica as
+   * datas de criação dos módulos + as datas das entradas do diário e conta os eventos
+   * por dia (UTC). Retorna só os dias com atividade — o front preenche o restante.
+   */
+  private async activityByDay(): Promise<DashboardData['activity']> {
+    const rows = await this.prisma.$queryRaw<ActivityRow[]>`
+      SELECT day, COUNT(*)::int AS count
+      FROM (
+        SELECT "date"::date       AS day FROM diary_entries
+        UNION ALL SELECT "createdAt"::date FROM studies
+        UNION ALL SELECT "createdAt"::date FROM projects
+        UNION ALL SELECT "createdAt"::date FROM tasks
+        UNION ALL SELECT "createdAt"::date FROM bugs
+        UNION ALL SELECT "createdAt"::date FROM project_versions
+        UNION ALL SELECT "createdAt"::date FROM project_docs
+        UNION ALL SELECT "createdAt"::date FROM wiki_pages
+        UNION ALL SELECT "createdAt"::date FROM ideas
+        UNION ALL SELECT "createdAt"::date FROM notes
+        UNION ALL SELECT "createdAt"::date FROM known_errors
+      ) events
+      WHERE day >= (CURRENT_DATE - INTERVAL '370 days')
+      GROUP BY day
+      ORDER BY day
+    `;
+    return rows.map((r) => ({
+      date: r.day.toISOString().slice(0, 10),
+      count: Number(r.count),
+    }));
   }
 }

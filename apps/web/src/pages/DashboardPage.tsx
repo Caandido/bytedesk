@@ -21,6 +21,16 @@ import {
 import { TaskPriorityBadge } from '@/features/tasks/TaskPriorityBadge';
 import { BugSeverityBadge } from '@/features/bugs/BugMeta';
 import { useDashboard } from '@/features/dashboard/useDashboard';
+import { ActivityHeatmap } from '@/features/dashboard/ActivityHeatmap';
+
+/** Saudação conforme a hora local — deixa a tela inicial mais acolhedora. */
+function greeting(): string {
+  const h = new Date().getHours();
+  if (h < 6) return 'Boa madrugada';
+  if (h < 12) return 'Bom dia';
+  if (h < 18) return 'Boa tarde';
+  return 'Boa noite';
+}
 
 /**
  * Tela inicial com dados reais agregados dos módulos (via GET /api/dashboard):
@@ -45,8 +55,10 @@ export function DashboardPage() {
   return (
     <div className="mx-auto max-w-6xl space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground">Visão geral do seu ambiente.</p>
+        <h1 className="text-2xl font-bold tracking-tight">{greeting()} 👋</h1>
+        <p className="text-muted-foreground">
+          Aqui está a visão geral do seu ambiente de desenvolvimento.
+        </p>
       </div>
 
       {/* Estatísticas */}
@@ -94,6 +106,9 @@ export function DashboardPage() {
           hint={`${d.wiki.favorites} favoritas`}
         />
       </div>
+
+      {/* Frequência de atividade (estilo GitHub) */}
+      <ActivityHeatmap activity={d.activity} />
 
       {/* Listas */}
       <div className="grid gap-4 lg:grid-cols-3">

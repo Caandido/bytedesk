@@ -39,6 +39,15 @@ export const dashboardBugSchema = z.object({
   projectName: z.string(),
 });
 
+/**
+ * Um dia no mapa de frequência (estilo GitHub): data ISO `YYYY-MM-DD` e o número
+ * de eventos registrados naquele dia (criações + entradas do diário).
+ */
+export const activityDaySchema = z.object({
+  date: z.string(),
+  count: z.number().int(),
+});
+
 export const dashboardSchema = z.object({
   studies: z.object({
     total: z.number().int(),
@@ -73,8 +82,11 @@ export const dashboardSchema = z.object({
   recentStudies: z.array(dashboardStudySchema),
   upcomingTasks: z.array(dashboardTaskSchema),
   recentBugs: z.array(dashboardBugSchema),
+  /** Frequência de atividade dos últimos ~12 meses (só dias com eventos). */
+  activity: z.array(activityDaySchema),
 });
 
+export type ActivityDay = z.infer<typeof activityDaySchema>;
 export type DashboardStudy = z.infer<typeof dashboardStudySchema>;
 export type DashboardTask = z.infer<typeof dashboardTaskSchema>;
 export type DashboardBug = z.infer<typeof dashboardBugSchema>;
