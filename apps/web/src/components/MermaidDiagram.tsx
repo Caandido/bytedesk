@@ -1,11 +1,26 @@
 import { useEffect, useId, useState } from 'react';
 import { Loader2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+interface MermaidDiagramProps {
+  chart: string;
+  /**
+   * 'strict' (padrão) para conteúdo do usuário; 'loose' permite links clicáveis
+   * (`click ... href`) — usado só em diagramas gerados pelo app (ex.: mapas mentais).
+   */
+  securityLevel?: 'strict' | 'loose';
+  className?: string;
+}
 
 /**
  * Renderiza um diagrama Mermaid a partir do texto. O pacote `mermaid` é pesado, então
  * é carregado sob demanda (import dinâmico) — só baixa quando há um diagrama na página.
  */
-export function MermaidDiagram({ chart }: { chart: string }) {
+export function MermaidDiagram({
+  chart,
+  securityLevel = 'strict',
+  className,
+}: MermaidDiagramProps) {
   const [svg, setSvg] = useState('');
   const [error, setError] = useState<string | null>(null);
   const rawId = useId().replace(/[^a-zA-Z0-9]/g, '');
@@ -19,7 +34,7 @@ export function MermaidDiagram({ chart }: { chart: string }) {
         mermaid.initialize({
           startOnLoad: false,
           theme: 'dark',
-          securityLevel: 'strict',
+          securityLevel,
         });
         const { svg } = await mermaid.render(`mmd-${rawId}`, chart.trim());
         if (active) setSvg(svg);
@@ -32,7 +47,7 @@ export function MermaidDiagram({ chart }: { chart: string }) {
     return () => {
       active = false;
     };
-  }, [chart, rawId]);
+  }, [chart, rawId, securityLevel]);
 
   if (error) {
     return (
@@ -52,8 +67,11 @@ export function MermaidDiagram({ chart }: { chart: string }) {
 
   return (
     <div
-      className="my-3 flex justify-center overflow-x-auto rounded-md border border-border bg-card p-3 [&_svg]:max-w-full"
-      // O SVG vem do mermaid com securityLevel 'strict' (sanitizado).
+      className={cn(
+        'my-3 flex justify-center overflow-x-auto rounded-md border border-border bg-card p-3 [&_svg]:max-w-full',
+        className,
+      )}
+      // O SVG é gerado pelo mermaid (securityLevel controla sanitização de links).
       dangerouslySetInnerHTML={{ __html: svg }}
     />
   );

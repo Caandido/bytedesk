@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -6,11 +7,14 @@ import {
   Loader2,
   CircleDot,
   Play,
+  Network,
+  List,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { RoadmapMindmap } from '@/features/roadmaps/RoadmapMindmap';
 import {
   useRoadmapTemplate,
   useImportRoadmap,
@@ -25,6 +29,7 @@ export function RoadmapGuidePage() {
   const navigate = useNavigate();
   const template = useRoadmapTemplate(id);
   const importRoadmap = useImportRoadmap();
+  const [view, setView] = useState<'map' | 'list'>('map');
 
   if (template.isLoading) {
     return (
@@ -96,6 +101,44 @@ export function RoadmapGuidePage() {
         </Button>
       </div>
 
+      {/* Alternador Mapa mental / Lista */}
+      <div className="inline-flex rounded-md border border-border p-0.5">
+        <button
+          type="button"
+          onClick={() => setView('map')}
+          className={cn(
+            'flex items-center gap-1.5 rounded px-3 py-1 text-sm font-medium transition-colors',
+            view === 'map'
+              ? 'bg-accent text-accent-foreground'
+              : 'text-muted-foreground hover:text-foreground',
+          )}
+        >
+          <Network className="size-4" /> Mapa mental
+        </button>
+        <button
+          type="button"
+          onClick={() => setView('list')}
+          className={cn(
+            'flex items-center gap-1.5 rounded px-3 py-1 text-sm font-medium transition-colors',
+            view === 'list'
+              ? 'bg-accent text-accent-foreground'
+              : 'text-muted-foreground hover:text-foreground',
+          )}
+        >
+          <List className="size-4" /> Lista
+        </button>
+      </div>
+
+      {view === 'map' && (
+        <div className="space-y-2">
+          <RoadmapMindmap template={t} />
+          <p className="text-center text-xs text-muted-foreground">
+            Nós em verde têm roadmap dedicado — clique para navegar.
+          </p>
+        </div>
+      )}
+
+      {view === 'list' && (
       <ol className="space-y-2">
         {t.items.map((item, i) => (
           <li key={i}>
@@ -148,6 +191,7 @@ export function RoadmapGuidePage() {
           </li>
         ))}
       </ol>
+      )}
     </div>
   );
 }

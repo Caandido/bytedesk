@@ -28,14 +28,74 @@ function videoLink(roadmapName: string, title: string): CatalogLink {
   };
 }
 
-/** Enriquece cada item com um link de vídeo-aulas (além dos links curados). */
+/**
+ * Mapeamento palavra-chave → roadmap dedicado (ordem: mais específico primeiro).
+ * Cria cross-links automáticos (estilo Obsidian) entre os tópicos e os roadmaps.
+ */
+const KEYWORD_LINKS: ReadonlyArray<readonly [RegExp, string]> = [
+  [/\bhtml\b/i, 'html'],
+  [/\bcss\b|flexbox|\bgrid\b/i, 'css'],
+  [/\btypescript\b/i, 'typescript'],
+  [/\bjavascript\b/i, 'javascript'],
+  [/\breact\b/i, 'react'],
+  [/\bvue\b|nuxt/i, 'vue'],
+  [/\bangular\b/i, 'angular'],
+  [/\bnext\.?js\b/i, 'nextjs'],
+  [/tailwind/i, 'tailwind'],
+  [/\bnode(\.?js)?\b|express|nestjs/i, 'nodejs'],
+  [/\bpython\b/i, 'python'],
+  [/\bjava\b/i, 'java'],
+  [/\brust\b/i, 'rust'],
+  [/c\+\+/i, 'cpp'],
+  [/\bphp\b|laravel/i, 'php'],
+  [/\bgo(lang)?\b/i, 'go'],
+  [/\bdocker\b/i, 'docker'],
+  [/\bkubernetes\b/i, 'kubernetes'],
+  [/\blinux\b/i, 'linux'],
+  [/\baws\b/i, 'aws'],
+  [/\bgraphql\b/i, 'graphql'],
+  [/mongo|nosql/i, 'mongodb'],
+  [/\bredis\b/i, 'redis'],
+  [/postgre|\bsql\b|relacion/i, 'sql'],
+  [/\bgit(hub)?\b/i, 'git'],
+  [/\bflutter\b/i, 'flutter'],
+  [/system design|projeto de sistemas/i, 'system-design'],
+];
+
+const CATALOG_IDS = new Set(ROADMAP_CATALOG.map((t) => t.id));
+
+/** Infere o roadmap dedicado de um tópico (evita auto-referência). */
+function resolveLinkTo(
+  title: string,
+  currentId: string,
+): string | undefined {
+  for (const [re, id] of KEYWORD_LINKS) {
+    if (id !== currentId && CATALOG_IDS.has(id) && re.test(title)) return id;
+  }
+  return undefined;
+}
+
+/**
+ * Enriquece cada item com: link de vídeo-aulas, cross-link para o roadmap
+ * dedicado (quando o tópico corresponde a outro roadmap) e o campo `linkTo`.
+ */
 function enrichTemplate(template: RoadmapTemplate): RoadmapTemplate {
   return {
     ...template,
-    items: template.items.map<CatalogItem>((item) => ({
-      ...item,
-      links: [...(item.links ?? []), videoLink(template.name, item.title)],
-    })),
+    items: template.items.map<CatalogItem>((item) => {
+      const linkTo = item.linkTo ?? resolveLinkTo(item.title, template.id);
+      const links: CatalogLink[] = [
+        ...(item.links ?? []),
+        videoLink(template.name, item.title),
+      ];
+      if (linkTo) {
+        links.push({
+          label: '🧭 Roadmap dedicado',
+          url: `/roadmaps/guia/${linkTo}`,
+        });
+      }
+      return { ...item, linkTo, links };
+    }),
   };
 }
 

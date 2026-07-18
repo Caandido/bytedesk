@@ -85,11 +85,13 @@ export const roadmapTemplateSchema = z.object({
 });
 export type RoadmapTemplateSummary = z.infer<typeof roadmapTemplateSchema>;
 
-/** Item de um template (com descrição e links). */
+/** Item de um template (com descrição, links e link para roadmap dedicado). */
 export const roadmapTemplateItemSchema = z.object({
   title: z.string(),
   description: z.string().optional(),
   links: z.array(linkSchema).optional(),
+  /** id de outro roadmap do catálogo (cross-link estilo Obsidian). */
+  linkTo: z.string().optional(),
 });
 export type RoadmapTemplateItem = z.infer<typeof roadmapTemplateItemSchema>;
 

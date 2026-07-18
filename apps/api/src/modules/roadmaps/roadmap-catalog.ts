@@ -14,6 +14,8 @@ export interface CatalogItem {
   title: string;
   description?: string;
   links?: CatalogLink[];
+  /** id de outro roadmap do catálogo (cross-link estilo Obsidian). */
+  linkTo?: string;
 }
 
 export interface RoadmapTemplate {
@@ -835,6 +837,48 @@ export const ROADMAP_CATALOG: RoadmapTemplate[] = [
       { title: 'Persistência local', description: 'shared_preferences, sqflite.' },
       { title: 'Animações', description: 'Transições e efeitos.' },
       { title: 'Publicação (stores)', description: 'Build e deploy.' },
+    ],
+  },
+  {
+    id: 'html',
+    name: 'HTML',
+    category: 'Skill-based',
+    description: 'Guia dedicado de HTML — a estrutura da web.',
+    url: 'https://roadmap.sh/frontend',
+    items: [
+      { title: 'Estrutura básica', description: 'doctype, html, head, body.', links: [mdn('Web/HTML/Element')] },
+      { title: 'Tags de texto', description: 'headings, p, span, strong, em.' },
+      { title: 'Listas', description: 'ul, ol, li, dl.' },
+      { title: 'Links e imagens', description: 'a, img, srcset.', links: [mdn('Web/HTML/Element/a')] },
+      { title: 'Tags semânticas', description: 'header, nav, main, section, article, footer.', links: [{ label: 'Semântica', url: 'https://developer.mozilla.org/pt-BR/docs/Glossary/Semantics' }] },
+      { title: 'Formulários', description: 'form, input, label, select, textarea.', links: [mdn('Web/HTML/Element/form')] },
+      { title: 'Tabelas', description: 'table, thead, tbody, tr, th, td.' },
+      { title: 'Mídia', description: 'audio, video, picture.' },
+      { title: 'Atributos', description: 'id, class, data-*, aria-*.' },
+      { title: 'Acessibilidade (ARIA)', description: 'Roles e labels para leitores de tela.', links: [mdn('Web/Accessibility/ARIA')] },
+      { title: 'SEO e meta tags', description: 'title, meta description, Open Graph.' },
+      { title: 'Boas práticas', description: 'HTML válido e semântico.' },
+    ],
+  },
+  {
+    id: 'css',
+    name: 'CSS',
+    category: 'Skill-based',
+    description: 'Guia dedicado de CSS — o estilo da web.',
+    url: 'https://roadmap.sh/frontend',
+    items: [
+      { title: 'Seletores', description: 'Elemento, classe, id, atributo, pseudo.', links: [mdn('Web/CSS/CSS_selectors')] },
+      { title: 'Box model', description: 'margin, border, padding, content.', links: [mdn('Web/CSS/CSS_box_model')] },
+      { title: 'Cores e unidades', description: 'hex, rgb, hsl, px, rem, %.' },
+      { title: 'Tipografia', description: 'font-family, size, weight, line-height.' },
+      { title: 'Flexbox', description: 'Layout unidimensional.', links: [{ label: 'Guia Flexbox', url: 'https://css-tricks.com/snippets/css/a-guide-to-flexbox/' }] },
+      { title: 'Grid', description: 'Layout bidimensional.', links: [{ label: 'Guia Grid', url: 'https://css-tricks.com/snippets/css/complete-guide-grid/' }] },
+      { title: 'Position', description: 'static, relative, absolute, fixed, sticky.', links: [mdn('Web/CSS/position')] },
+      { title: 'Responsividade', description: 'Media queries e mobile-first.', links: [mdn('Web/CSS/CSS_media_queries')] },
+      { title: 'Transições e animações', description: 'transition, animation, keyframes.' },
+      { title: 'Transform', description: 'translate, rotate, scale.' },
+      { title: 'Variáveis CSS', description: 'custom properties (--var).', links: [mdn('Web/CSS/Using_CSS_custom_properties')] },
+      { title: 'Especificidade e cascata', description: 'Como o CSS resolve conflitos.' },
     ],
   },
 ];
