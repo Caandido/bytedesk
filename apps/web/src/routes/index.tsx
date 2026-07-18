@@ -67,6 +67,11 @@ const ProjectDocsPage = lazy(() =>
     default: m.ProjectDocsPage,
   })),
 );
+const ProjectArchitecturePage = lazy(() =>
+  import('@/pages/project/ProjectArchitecturePage').then((m) => ({
+    default: m.ProjectArchitecturePage,
+  })),
+);
 const RoadmapsPage = lazy(() =>
   import('@/pages/RoadmapsPage').then((m) => ({ default: m.RoadmapsPage })),
 );
@@ -130,6 +135,7 @@ export const router = createBrowserRouter([
           { path: 'bugs', element: <ProjectBugsPage /> },
           { path: 'ideias', element: <ProjectIdeasPage /> },
           { path: 'versoes', element: <ProjectVersionsPage /> },
+          { path: 'arquitetura', element: <ProjectArchitecturePage /> },
           { path: 'docs', element: <ProjectDocsPage /> },
         ],
       },

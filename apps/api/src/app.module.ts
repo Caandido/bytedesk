@@ -17,6 +17,7 @@ import { StatsModule } from './modules/stats/stats.module';
 import { DiaryModule } from './modules/diary/diary.module';
 import { IdeasModule } from './modules/ideas/ideas.module';
 import { ErrorsModule } from './modules/errors/errors.module';
+import { ArchitectureModule } from './modules/architecture/architecture.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { ErrorsModule } from './modules/errors/errors.module';
     DiaryModule,
     IdeasModule,
     ErrorsModule,
+    ArchitectureModule,
   ],
 })
 export class AppModule {}

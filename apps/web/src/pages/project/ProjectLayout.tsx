@@ -29,6 +29,7 @@ const tabs = [
   { to: 'bugs', label: 'Bugs', end: false },
   { to: 'ideias', label: 'Ideias', end: false },
   { to: 'versoes', label: 'Versões', end: false },
+  { to: 'arquitetura', label: 'Arquitetura', end: false },
   { to: 'docs', label: 'Documentação', end: false },
 ];
 

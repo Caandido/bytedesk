@@ -148,18 +148,35 @@ model Project {
   nextVersion String   @default("")
   gitTags     String[] @default([])
 
-  objectives ProjectObjective[]
-  tasks      Task[]
-  bugs       Bug[]
-  docs       ProjectDoc[]
-  versions   ProjectVersion[]
-  diary      DiaryEntry[]
-  ideas      Idea[]
+  objectives   ProjectObjective[]
+  tasks        Task[]
+  bugs         Bug[]
+  docs         ProjectDoc[]
+  versions     ProjectVersion[]
+  diary        DiaryEntry[]
+  ideas        Idea[]
+  architecture ProjectArchitecture?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("projects")
+}
+
+/// Documentação de arquitetura de um projeto (1-1): diagramas (Mermaid),
+/// estrutura de pastas e dependências.
+model ProjectArchitecture {
+  id              String  @id @default(cuid())
+  projectId       String  @unique
+  project         Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  content         String  @default("") // Markdown com Mermaid (diagramas, DB, APIs, fluxos)
+  folderStructure String  @default("") // árvore de pastas (texto)
+  dependencies    Json    @default("[]") // [{ name, version }]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("project_architectures")
 }
 
 /// Item de checklist (objetivo) da visão geral de um projeto.
