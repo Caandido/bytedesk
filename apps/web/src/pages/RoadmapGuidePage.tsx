@@ -5,6 +5,7 @@ import {
   Download,
   Loader2,
   CircleDot,
+  Play,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
@@ -115,17 +116,30 @@ export function RoadmapGuidePage() {
                   )}
                   {item.links && item.links.length > 0 && (
                     <div className="flex flex-wrap gap-2 pt-0.5">
-                      {item.links.map((link, li) => (
-                        <a
-                          key={li}
-                          href={link.url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-flex items-center gap-1 rounded bg-muted px-2 py-0.5 text-xs text-info hover:underline"
-                        >
-                          <ExternalLink className="size-3" /> {link.label}
-                        </a>
-                      ))}
+                      {item.links.map((link, li) => {
+                        const isVideo = link.url.includes('youtube.com');
+                        return (
+                          <a
+                            key={li}
+                            href={link.url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className={cn(
+                              'inline-flex items-center gap-1 rounded px-2 py-0.5 text-xs hover:underline',
+                              isVideo
+                                ? 'bg-danger/10 text-danger'
+                                : 'bg-muted text-info',
+                            )}
+                          >
+                            {isVideo ? (
+                              <Play className="size-3" />
+                            ) : (
+                              <ExternalLink className="size-3" />
+                            )}
+                            {link.label.replace('🎥 ', '')}
+                          </a>
+                        );
+                      })}
                     </div>
                   )}
                 </div>

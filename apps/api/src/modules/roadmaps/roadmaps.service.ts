@@ -7,12 +7,37 @@ import {
   CreateRoadmapItemDto,
   UpdateRoadmapItemDto,
 } from './dto/roadmap.dto';
-import { ROADMAP_CATALOG } from './roadmap-catalog';
+import {
+  ROADMAP_CATALOG,
+  type RoadmapTemplate,
+  type CatalogItem,
+  type CatalogLink,
+} from './roadmap-catalog';
 
 /** Sempre trazemos os itens ordenados junto da trilha. */
 const roadmapInclude = {
   items: { orderBy: { position: 'asc' } },
 } satisfies Prisma.RoadmapInclude;
+
+/** Link de busca de vídeo-aulas no YouTube para um tópico. */
+function videoLink(roadmapName: string, title: string): CatalogLink {
+  const q = encodeURIComponent(`${roadmapName} ${title} tutorial`);
+  return {
+    label: '🎥 Vídeo-aulas',
+    url: `https://www.youtube.com/results?search_query=${q}`,
+  };
+}
+
+/** Enriquece cada item com um link de vídeo-aulas (além dos links curados). */
+function enrichTemplate(template: RoadmapTemplate): RoadmapTemplate {
+  return {
+    ...template,
+    items: template.items.map<CatalogItem>((item) => ({
+      ...item,
+      links: [...(item.links ?? []), videoLink(template.name, item.title)],
+    })),
+  };
+}
 
 /**
  * Regras de acesso a dados do módulo Roadmaps. Mesmo padrão do StudiesService
@@ -72,13 +97,13 @@ export class RoadmapsService {
     }));
   }
 
-  /** Retorna um template completo (com itens, descrições e links). */
+  /** Retorna um template completo enriquecido (itens, descrições, links + vídeo). */
   getTemplate(templateId: string) {
     const template = ROADMAP_CATALOG.find((t) => t.id === templateId);
     if (!template) {
       throw new NotFoundException(`Template ${templateId} não encontrado`);
     }
-    return template;
+    return enrichTemplate(template);
   }
 
   /** Cria uma trilha a partir de um template do catálogo (com seus itens ricos). */
