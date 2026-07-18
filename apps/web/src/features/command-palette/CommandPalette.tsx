@@ -8,6 +8,7 @@ import { useUIStore } from '@/stores/ui';
 /** Ações rápidas (criação) exibidas no topo da paleta. */
 const quickActions = [
   { label: 'Novo estudo', path: '/estudos/novo', icon: Plus },
+  { label: 'Novo projeto', path: '/projetos/novo', icon: Plus },
 ];
 
 /**

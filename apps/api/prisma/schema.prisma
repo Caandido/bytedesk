@@ -86,3 +86,65 @@ model StudyObjective {
   @@index([studyId])
   @@map("study_objectives")
 }
+
+// ─── Módulo Projetos ─────────────────────────────────────────────────────────
+
+/// Situação do projeto no ciclo de desenvolvimento.
+enum ProjectStatus {
+  PLANNING
+  IN_PROGRESS
+  PAUSED
+  COMPLETED
+  ARCHIVED
+}
+
+/// Prioridade do projeto.
+enum ProjectPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+/// Um projeto de software com visão geral, objetivos e links externos. Sub-módulos
+/// (tarefas, bugs, versões, docs) serão adicionados em etapas futuras.
+model Project {
+  id           String          @id @default(cuid())
+  name         String
+  description  String          @default("") // Visão geral (Markdown)
+  client       String          @default("")
+  category     String          @default("")
+  technologies String[]        @default([])
+  status       ProjectStatus   @default(PLANNING)
+  priority     ProjectPriority @default(MEDIUM)
+  version      String          @default("")
+  repoUrl      String          @default("") // GitHub/GitLab
+  figmaUrl     String          @default("")
+  deployUrl    String          @default("")
+  docsUrl      String          @default("")
+  startDate    DateTime?
+  deadline     DateTime?
+
+  objectives ProjectObjective[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("projects")
+}
+
+/// Item de checklist (objetivo) da visão geral de um projeto.
+model ProjectObjective {
+  id        String  @id @default(cuid())
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title     String
+  done      Boolean @default(false)
+  position  Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([projectId])
+  @@map("project_objectives")
+}

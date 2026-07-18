@@ -1,10 +1,9 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeft,
   Pencil,
   Trash2,
-  Plus,
   Loader2,
   Clock,
   Calendar,
@@ -21,10 +20,10 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Button, buttonVariants } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Markdown } from '@/components/Markdown';
+import { ObjectiveChecklist } from '@/components/ObjectiveChecklist';
 import { StudyStatusBadge, StudyLevelBadge } from '@/features/studies/StudyMeta';
 import {
   useStudy,
@@ -175,107 +174,20 @@ export function StudyDetailPage() {
 // ─── Objetivos ─────────────────────────────────────────────────────────────────
 
 function ObjectivesSection({ study }: { study: Study }) {
-  const objectives = study.objectives ?? [];
-  const done = objectives.filter((o) => o.done).length;
-  const progress = objectives.length
-    ? Math.round((done / objectives.length) * 100)
-    : 0;
-
   const addObjective = useAddObjective(study.id);
   const updateObjective = useUpdateObjective(study.id);
   const deleteObjective = useDeleteObjective(study.id);
-  const [title, setTitle] = useState('');
-
-  const handleAdd = (e: FormEvent) => {
-    e.preventDefault();
-    const trimmed = title.trim();
-    if (!trimmed) return;
-    addObjective.mutate({ title: trimmed }, { onSuccess: () => setTitle('') });
-  };
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-base">Objetivos</CardTitle>
-          {objectives.length > 0 && (
-            <span className="text-sm text-muted-foreground">
-              {done}/{objectives.length}
-            </span>
-          )}
-        </div>
-        {objectives.length > 0 && (
-          <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-muted">
-            <div
-              className="h-full rounded-full bg-primary transition-all"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-        )}
-      </CardHeader>
-      <CardContent className="space-y-3">
-        {objectives.length === 0 && (
-          <p className="text-sm text-muted-foreground">
-            Nenhum objetivo ainda. Adicione o primeiro abaixo.
-          </p>
-        )}
-
-        <ul className="space-y-1">
-          {objectives.map((obj) => (
-            <li
-              key={obj.id}
-              className="flex items-center gap-3 rounded-md px-2 py-1.5 hover:bg-accent/50"
-            >
-              <input
-                type="checkbox"
-                checked={obj.done}
-                onChange={() =>
-                  updateObjective.mutate({
-                    objectiveId: obj.id,
-                    input: { done: !obj.done },
-                  })
-                }
-                className="size-4 shrink-0 cursor-pointer accent-primary"
-                aria-label={obj.title}
-              />
-              <span
-                className={cn(
-                  'flex-1 text-sm',
-                  obj.done && 'text-muted-foreground line-through',
-                )}
-              >
-                {obj.title}
-              </span>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="size-7"
-                aria-label={`Remover ${obj.title}`}
-                onClick={() => deleteObjective.mutate(obj.id)}
-              >
-                <Trash2 className="size-3.5 text-danger" />
-              </Button>
-            </li>
-          ))}
-        </ul>
-
-        <form onSubmit={handleAdd} className="flex gap-2">
-          <Input
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Novo objetivo…"
-            maxLength={200}
-          />
-          <Button type="submit" size="icon" disabled={addObjective.isPending}>
-            {addObjective.isPending ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : (
-              <Plus className="size-4" />
-            )}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+    <ObjectiveChecklist
+      objectives={study.objectives ?? []}
+      adding={addObjective.isPending}
+      onAdd={(title) => addObjective.mutate({ title })}
+      onToggle={(objectiveId, done) =>
+        updateObjective.mutate({ objectiveId, input: { done } })
+      }
+      onDelete={(objectiveId) => deleteObjective.mutate(objectiveId)}
+    />
   );
 }
 

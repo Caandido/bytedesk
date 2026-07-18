@@ -4,6 +4,9 @@ import { DashboardPage } from '@/pages/DashboardPage';
 import { StudiesPage } from '@/pages/StudiesPage';
 import { StudyFormPage } from '@/pages/StudyFormPage';
 import { StudyDetailPage } from '@/pages/StudyDetailPage';
+import { ProjectsPage } from '@/pages/ProjectsPage';
+import { ProjectFormPage } from '@/pages/ProjectFormPage';
+import { ProjectDetailPage } from '@/pages/ProjectDetailPage';
 import { PlaceholderPage } from '@/pages/PlaceholderPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 
@@ -21,21 +24,16 @@ export const router = createBrowserRouter([
       { path: 'estudos/novo', element: <StudyFormPage /> },
       { path: 'estudos/:id', element: <StudyDetailPage /> },
       { path: 'estudos/:id/editar', element: <StudyFormPage /> },
+      { path: 'projetos', element: <ProjectsPage /> },
+      { path: 'projetos/novo', element: <ProjectFormPage /> },
+      { path: 'projetos/:id', element: <ProjectDetailPage /> },
+      { path: 'projetos/:id/editar', element: <ProjectFormPage /> },
       {
         path: 'roadmaps',
         element: (
           <PlaceholderPage
             title="Roadmaps"
             description="Trilhas de aprendizado com progresso e recursos."
-          />
-        ),
-      },
-      {
-        path: 'projetos',
-        element: (
-          <PlaceholderPage
-            title="Projetos"
-            description="Gerencie projetos com tarefas, bugs, versões e documentação."
           />
         ),
       },
