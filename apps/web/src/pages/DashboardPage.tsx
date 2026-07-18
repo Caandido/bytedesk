@@ -1,132 +1,231 @@
-import { useState, type FormEvent } from 'react';
-import { CheckCircle2, XCircle, Loader2, Trash2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import {
+  FolderKanban,
+  GraduationCap,
+  ListChecks,
+  Bug as BugIcon,
+  Clock,
+  Loader2,
+  ArrowRight,
+  type LucideIcon,
+} from 'lucide-react';
+import type { DashboardData } from '@devflow/shared';
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { useHealth } from '@/features/health/useHealth';
-import {
-  useNotes,
-  useCreateNote,
-  useDeleteNote,
-} from '@/features/notes/useNotes';
+import { TaskPriorityBadge } from '@/features/tasks/TaskPriorityBadge';
+import { BugSeverityBadge } from '@/features/bugs/BugMeta';
+import { useDashboard } from '@/features/dashboard/useDashboard';
 
 /**
- * Dashboard da fundação. Ainda não traz as estatísticas reais da spec — serve como
- * prova viva da integração front ↔ API ↔ SQLite (status do backend + CRUD de notas).
+ * Tela inicial com dados reais agregados dos módulos (via GET /api/dashboard):
+ * estatísticas, estudos em andamento, próximas tarefas e bugs abertos.
  */
 export function DashboardPage() {
-  const health = useHealth();
-  const notes = useNotes();
-  const createNote = useCreateNote();
-  const deleteNote = useDeleteNote();
-  const [title, setTitle] = useState('');
+  const dashboard = useDashboard();
 
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault();
-    const trimmed = title.trim();
-    if (!trimmed) return;
-    createNote.mutate({ title: trimmed }, { onSuccess: () => setTitle('') });
-  };
+  if (dashboard.isLoading) {
+    return (
+      <p className="flex items-center gap-2 text-sm text-muted-foreground">
+        <Loader2 className="size-4 animate-spin" /> Carregando dashboard…
+      </p>
+    );
+  }
+  if (dashboard.isError || !dashboard.data) {
+    return <p className="text-sm text-danger">Erro ao carregar o dashboard.</p>;
+  }
+
+  const d = dashboard.data;
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
+    <div className="mx-auto max-w-6xl space-y-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground">
-          Fundação do DevFlow — integração front ↔ back ativa.
-        </p>
+        <p className="text-muted-foreground">Visão geral do seu ambiente.</p>
       </div>
 
-      {/* Status do backend */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Status da API</CardTitle>
-          <CardDescription>GET /api/health</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {health.isLoading && (
-            <span className="flex items-center gap-2 text-muted-foreground">
-              <Loader2 className="size-4 animate-spin" /> Conectando…
-            </span>
-          )}
-          {health.isError && (
-            <span className="flex items-center gap-2 text-danger">
-              <XCircle className="size-4" /> Backend indisponível
-            </span>
-          )}
-          {health.isSuccess && (
-            <span className="flex items-center gap-2 text-primary">
-              <CheckCircle2 className="size-4" /> {health.data.service} · online
-            </span>
-          )}
-        </CardContent>
-      </Card>
+      {/* Estatísticas */}
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
+        <StatCard
+          icon={FolderKanban}
+          value={d.projects.active}
+          label="Projetos ativos"
+          hint={`${d.projects.total} no total`}
+        />
+        <StatCard
+          icon={GraduationCap}
+          value={d.studies.inProgress}
+          label="Estudos em andamento"
+          hint={`${d.studies.total} no total`}
+        />
+        <StatCard
+          icon={ListChecks}
+          value={d.tasks.pending}
+          label="Tarefas pendentes"
+          hint={`${d.tasks.done} concluídas`}
+        />
+        <StatCard
+          icon={BugIcon}
+          value={d.bugs.open}
+          label="Bugs abertos"
+          hint={`${d.bugs.resolved} resolvidos`}
+          danger={d.bugs.open > 0}
+        />
+        <StatCard
+          icon={Clock}
+          value={`${d.studies.hoursStudied}h`}
+          label="Horas estudadas"
+        />
+      </div>
 
-      {/* Demo CRUD de notas */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Notas (demo)</CardTitle>
-          <CardDescription>
-            Entidade-exemplo persistida no SQLite via Prisma.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <form onSubmit={handleSubmit} className="flex gap-2">
-            <Input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Título da nota…"
-              maxLength={200}
-            />
-            <Button type="submit" disabled={createNote.isPending}>
-              {createNote.isPending ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : (
-                'Adicionar'
-              )}
-            </Button>
-          </form>
-
-          {notes.isLoading && (
-            <p className="text-sm text-muted-foreground">Carregando notas…</p>
-          )}
-          {notes.isError && (
-            <p className="text-sm text-danger">Erro ao carregar notas.</p>
-          )}
-          {notes.isSuccess && notes.data.length === 0 && (
-            <p className="text-sm text-muted-foreground">
-              Nenhuma nota ainda. Crie a primeira acima.
-            </p>
-          )}
-          {notes.isSuccess && notes.data.length > 0 && (
-            <ul className="divide-y divide-border rounded-md border border-border">
-              {notes.data.map((note) => (
-                <li
-                  key={note.id}
-                  className="flex items-center justify-between gap-2 px-3 py-2"
-                >
-                  <span className="truncate text-sm">{note.title}</span>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    aria-label={`Excluir ${note.title}`}
-                    onClick={() => deleteNote.mutate(note.id)}
-                    disabled={deleteNote.isPending}
-                  >
-                    <Trash2 className="size-4 text-danger" />
-                  </Button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </CardContent>
-      </Card>
+      {/* Listas */}
+      <div className="grid gap-4 lg:grid-cols-3">
+        <StudiesInProgress studies={d.recentStudies} />
+        <UpcomingTasks tasks={d.upcomingTasks} />
+        <OpenBugs bugs={d.recentBugs} />
+      </div>
     </div>
+  );
+}
+
+// ─── Cards de estatística ────────────────────────────────────────────────────
+
+function StatCard({
+  icon: Icon,
+  value,
+  label,
+  hint,
+  danger,
+}: {
+  icon: LucideIcon;
+  value: number | string;
+  label: string;
+  hint?: string;
+  danger?: boolean;
+}) {
+  return (
+    <Card>
+      <CardContent className="p-4">
+        <Icon
+          className={danger ? 'size-5 text-danger' : 'size-5 text-primary'}
+        />
+        <p className="mt-2 text-2xl font-bold tabular-nums">{value}</p>
+        <p className="text-xs text-muted-foreground">{label}</p>
+        {hint && <p className="mt-0.5 text-[11px] text-muted-foreground">{hint}</p>}
+      </CardContent>
+    </Card>
+  );
+}
+
+// ─── Listas ──────────────────────────────────────────────────────────────────
+
+function StudiesInProgress({
+  studies,
+}: {
+  studies: DashboardData['recentStudies'];
+}) {
+  return (
+    <Card>
+      <CardHeader className="flex-row items-center justify-between space-y-0">
+        <CardTitle className="text-base">Estudos em andamento</CardTitle>
+        <Link
+          to="/estudos"
+          className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+        >
+          Ver todos <ArrowRight className="size-3" />
+        </Link>
+      </CardHeader>
+      <CardContent className="space-y-2">
+        {studies.length === 0 && (
+          <p className="text-sm text-muted-foreground">
+            Nenhum estudo em andamento.
+          </p>
+        )}
+        {studies.map((s) => (
+          <Link
+            key={s.id}
+            to={`/estudos/${s.id}`}
+            className="flex items-center justify-between gap-2 rounded-md border border-border px-3 py-2 transition-colors hover:border-primary/50"
+          >
+            <div className="min-w-0">
+              <p className="truncate text-sm font-medium">{s.name}</p>
+              {s.objectivesTotal > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  {s.objectivesDone}/{s.objectivesTotal} objetivos
+                </p>
+              )}
+            </div>
+            <span className="shrink-0 text-xs text-muted-foreground">
+              {s.hoursStudied}h
+            </span>
+          </Link>
+        ))}
+      </CardContent>
+    </Card>
+  );
+}
+
+function UpcomingTasks({ tasks }: { tasks: DashboardData['upcomingTasks'] }) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">Próximas tarefas</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-2">
+        {tasks.length === 0 && (
+          <p className="text-sm text-muted-foreground">
+            Nenhuma tarefa pendente.
+          </p>
+        )}
+        {tasks.map((t) => (
+          <Link
+            key={t.id}
+            to={`/projetos/${t.projectId}/tarefas`}
+            className="flex items-center justify-between gap-2 rounded-md border border-border px-3 py-2 transition-colors hover:border-primary/50"
+          >
+            <div className="min-w-0">
+              <p className="truncate text-sm font-medium">{t.title}</p>
+              <p className="truncate text-xs text-muted-foreground">
+                {t.projectName}
+              </p>
+            </div>
+            <TaskPriorityBadge priority={t.priority} />
+          </Link>
+        ))}
+      </CardContent>
+    </Card>
+  );
+}
+
+function OpenBugs({ bugs }: { bugs: DashboardData['recentBugs'] }) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">Bugs abertos</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-2">
+        {bugs.length === 0 && (
+          <p className="text-sm text-muted-foreground">Nenhum bug aberto. 🎉</p>
+        )}
+        {bugs.map((b) => (
+          <Link
+            key={b.id}
+            to={`/projetos/${b.projectId}/bugs`}
+            className="flex items-center justify-between gap-2 rounded-md border border-border px-3 py-2 transition-colors hover:border-primary/50"
+          >
+            <div className="min-w-0">
+              <p className="truncate text-sm font-medium">{b.title}</p>
+              <p className="truncate text-xs text-muted-foreground">
+                {b.projectName}
+              </p>
+            </div>
+            <BugSeverityBadge severity={b.severity} />
+          </Link>
+        ))}
+      </CardContent>
+    </Card>
   );
 }
