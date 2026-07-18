@@ -221,9 +221,9 @@ function InviteSection() {
 
   const mailto = (token: string, to: string) => {
     const link = linkFor(token);
-    const subject = encodeURIComponent('Convite para o DevFlow');
+    const subject = encodeURIComponent('Convite para o ByteDesk');
     const body = encodeURIComponent(
-      `Você foi convidado para colaborar no DevFlow.\n\nAbra o link para entrar:\n${link}\n`,
+      `Você foi convidado para colaborar no ByteDesk.\n\nAbra o link para entrar:\n${link}\n`,
     );
     window.location.href = `mailto:${to}?subject=${subject}&body=${body}`;
   };

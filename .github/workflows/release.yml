@@ -111,5 +111,5 @@ jobs:
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
           APK=apps/web/android/app/build/outputs/apk/debug/app-debug.apk
-          cp "$APK" "DevFlow-${VERSION}.apk"
-          gh release upload "${GITHUB_REF_NAME}" "DevFlow-${VERSION}.apk" --clobber
+          cp "$APK" "ByteDesk-${VERSION}.apk"
+          gh release upload "${GITHUB_REF_NAME}" "ByteDesk-${VERSION}.apk" --clobber

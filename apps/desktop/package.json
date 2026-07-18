@@ -1,8 +1,8 @@
 {
-  "name": "@devflow/desktop",
+  "name": "@bytedesk/desktop",
   "version": "1.0.0",
   "private": true,
-  "description": "DevFlow — app desktop (Windows)",
+  "description": "ByteDesk — app desktop (Windows)",
   "author": "ByteDesk",
   "main": "main.js",
   "scripts": {
@@ -10,8 +10,8 @@
     "dist": "electron-builder --win --publish never"
   },
   "build": {
-    "appId": "com.bytedesk.devflow",
-    "productName": "DevFlow",
+    "appId": "com.bytedesk.app",
+    "productName": "ByteDesk",
     "copyright": "© ByteDesk",
     "files": ["main.js"],
     "directories": {
@@ -24,10 +24,10 @@
       "oneClick": false,
       "perMachine": false,
       "allowToChangeInstallationDirectory": true,
-      "artifactName": "DevFlow-Setup-${version}.${ext}"
+      "artifactName": "ByteDesk-Setup-${version}.${ext}"
     },
     "portable": {
-      "artifactName": "DevFlow-${version}-portable.${ext}"
+      "artifactName": "ByteDesk-${version}-portable.${ext}"
     }
   },
   "devDependencies": {

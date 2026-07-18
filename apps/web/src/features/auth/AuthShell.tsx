@@ -41,7 +41,7 @@ export function AuthShell({
         </div>
 
         <p className="mt-6 text-center text-xs text-muted-foreground/70">
-          DevFlow · seu ambiente de desenvolvimento
+          ByteDesk · seu ambiente de desenvolvimento
         </p>
       </div>
     </div>

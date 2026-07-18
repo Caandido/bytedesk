@@ -2,7 +2,7 @@
   "name": "@devflow/api",
   "version": "0.0.1",
   "private": true,
-  "description": "DevFlow backend — NestJS + Prisma + SQLite",
+  "description": "ByteDesk backend — NestJS + Prisma + PostgreSQL",
   "scripts": {
     "dev": "nest start --watch",
     "start": "node dist/main.js",

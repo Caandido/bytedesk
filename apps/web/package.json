@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "type": "module",
-  "description": "DevFlow frontend — React + Vite",
+  "description": "ByteDesk frontend — React + Vite",
   "scripts": {
     "dev": "vite",
     "build": "tsc -p tsconfig.json && vite build",

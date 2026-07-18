@@ -2,7 +2,7 @@
   "name": "devflow",
   "version": "1.0.0",
   "private": true,
-  "description": "DevFlow — Programming Study & Project Manager",
+  "description": "ByteDesk — Programming Study & Project Manager",
   "workspaces": [
     "packages/*",
     "apps/api",

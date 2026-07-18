@@ -21,7 +21,7 @@ export interface NavItem {
 }
 
 /**
- * Módulos de topo do DevFlow. Na fundação todos apontam para páginas placeholder;
+ * Módulos de topo do ByteDesk. Na fundação todos apontam para páginas placeholder;
  * cada um será substituído pela implementação real do módulo correspondente.
  */
 export const navItems: NavItem[] = [

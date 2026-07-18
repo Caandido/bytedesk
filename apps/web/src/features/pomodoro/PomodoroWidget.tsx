@@ -35,12 +35,12 @@ export function PomodoroWidget() {
   // Atualiza o título da aba com o tempo restante quando rodando.
   useEffect(() => {
     if (running) {
-      document.title = `${fmt(secondsLeft)} · ${MODE_LABEL[mode]} — DevFlow`;
+      document.title = `${fmt(secondsLeft)} · ${MODE_LABEL[mode]} — ByteDesk`;
     } else {
-      document.title = 'DevFlow';
+      document.title = 'ByteDesk';
     }
     return () => {
-      document.title = 'DevFlow';
+      document.title = 'ByteDesk';
     };
   }, [running, secondsLeft, mode]);
 

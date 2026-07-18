@@ -1,46 +1,52 @@
 import { cn } from '@/lib/utils';
 
-/** Marca do DevFlow: um glifo de "fluxo" (nós conectados) monocromático. */
+/**
+ * Marca do ByteDesk: um glifo de terminal `>_` (prompt do desenvolvedor) num
+ * quadrado preenchido de alto contraste — inverte com o tema (claro/escuro).
+ */
 export function LogoMark({ className }: { className?: string }) {
   return (
     <svg
       viewBox="0 0 32 32"
-      fill="none"
-      className={cn('size-8 text-foreground', className)}
+      className={cn('size-8', className)}
       aria-hidden="true"
     >
       <rect
-        x="1.25"
-        y="1.25"
-        width="29.5"
-        height="29.5"
+        x="1"
+        y="1"
+        width="30"
+        height="30"
         rx="8.5"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        opacity="0.9"
+        className="fill-foreground"
       />
       <path
-        d="M8.5 22.5 L14 13.5 L18.5 18 L23.5 9.5"
-        stroke="currentColor"
-        strokeWidth="2.4"
+        d="M9.5 11 L14.5 16 L9.5 21"
+        fill="none"
+        strokeWidth="2.8"
         strokeLinecap="round"
         strokeLinejoin="round"
-        className="logo-draw"
+        className="stroke-background logo-draw"
       />
-      <circle cx="8.5" cy="22.5" r="2.1" fill="currentColor" className="logo-dot" />
-      <circle cx="23.5" cy="9.5" r="2.1" fill="currentColor" className="logo-dot" />
+      <rect
+        x="16.5"
+        y="19.4"
+        width="7"
+        height="2.6"
+        rx="1.3"
+        className="fill-background logo-dot"
+      />
     </svg>
   );
 }
 
-/** Logo completo: marca + wordmark "DevFlow". */
+/** Logo completo: marca + wordmark "ByteDesk". */
 export function Logo({ compact = false }: { compact?: boolean }) {
   return (
-    <div className="group flex items-center gap-2.5 select-none">
+    <div className="group flex select-none items-center gap-2.5">
       <LogoMark className="transition-transform duration-500 group-hover:rotate-[8deg]" />
       {!compact && (
         <span className="text-lg font-bold tracking-tight">
-          Dev<span className="text-muted-foreground">Flow</span>
+          Byte<span className="text-muted-foreground">Desk</span>
         </span>
       )}
     </div>

@@ -1,9 +1,9 @@
-// Processo principal do Electron. O DevFlow é um app online (dados no servidor),
+// Processo principal do Electron. O ByteDesk é um app online (dados no servidor),
 // então a janela abre a aplicação hospedada — evitando problemas de roteamento
 // com file:// e mantendo o app sempre atualizado.
 const { app, BrowserWindow, shell } = require('electron');
 
-const APP_URL = process.env.DEVFLOW_URL || 'https://bytedesk-two.vercel.app';
+const APP_URL = process.env.BYTEDESK_URL || 'https://bytedesk-two.vercel.app';
 
 function createWindow() {
   const win = new BrowserWindow({

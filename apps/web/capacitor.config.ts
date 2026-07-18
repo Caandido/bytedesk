@@ -6,8 +6,8 @@ import type { CapacitorConfig } from '@capacitor/cli';
  * A API é acessada por URL absoluta (VITE_API_URL) definida no build.
  */
 const config: CapacitorConfig = {
-  appId: 'com.bytedesk.devflow',
-  appName: 'DevFlow',
+  appId: 'com.bytedesk.app',
+  appName: 'ByteDesk',
   webDir: 'dist',
   server: {
     androidScheme: 'https',
