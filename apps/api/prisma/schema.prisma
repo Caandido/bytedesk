@@ -126,6 +126,7 @@ model Project {
   deadline     DateTime?
 
   objectives ProjectObjective[]
+  tasks      Task[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -147,4 +148,43 @@ model ProjectObjective {
 
   @@index([projectId])
   @@map("project_objectives")
+}
+
+/// Coluna do quadro Kanban em que a tarefa se encontra.
+enum TaskStatus {
+  BACKLOG
+  TODO
+  IN_PROGRESS
+  TESTING
+  DONE
+}
+
+/// Prioridade da tarefa.
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+/// Tarefa de um projeto, posicionada em uma coluna do Kanban.
+model Task {
+  id             String       @id @default(cuid())
+  projectId      String
+  project        Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title          String
+  description    String       @default("")
+  status         TaskStatus   @default(BACKLOG)
+  priority       TaskPriority @default(MEDIUM)
+  assignee       String       @default("")
+  estimatedHours Float        @default(0)
+  spentHours     Float        @default(0)
+  position       Int          @default(0) // ordem dentro da coluna
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([projectId])
+  @@index([projectId, status])
+  @@map("tasks")
 }

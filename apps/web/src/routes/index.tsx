@@ -6,7 +6,9 @@ import { StudyFormPage } from '@/pages/StudyFormPage';
 import { StudyDetailPage } from '@/pages/StudyDetailPage';
 import { ProjectsPage } from '@/pages/ProjectsPage';
 import { ProjectFormPage } from '@/pages/ProjectFormPage';
-import { ProjectDetailPage } from '@/pages/ProjectDetailPage';
+import { ProjectLayout } from '@/pages/project/ProjectLayout';
+import { ProjectOverviewPage } from '@/pages/project/ProjectOverviewPage';
+import { ProjectTasksPage } from '@/pages/project/ProjectTasksPage';
 import { PlaceholderPage } from '@/pages/PlaceholderPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 
@@ -26,8 +28,15 @@ export const router = createBrowserRouter([
       { path: 'estudos/:id/editar', element: <StudyFormPage /> },
       { path: 'projetos', element: <ProjectsPage /> },
       { path: 'projetos/novo', element: <ProjectFormPage /> },
-      { path: 'projetos/:id', element: <ProjectDetailPage /> },
       { path: 'projetos/:id/editar', element: <ProjectFormPage /> },
+      {
+        path: 'projetos/:id',
+        element: <ProjectLayout />,
+        children: [
+          { index: true, element: <ProjectOverviewPage /> },
+          { path: 'tarefas', element: <ProjectTasksPage /> },
+        ],
+      },
       {
         path: 'roadmaps',
         element: (

@@ -13,3 +13,4 @@ export * from './common';
 export * from './note';
 export * from './study';
 export * from './project';
+export * from './task';
