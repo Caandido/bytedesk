@@ -26,6 +26,7 @@ import { Markdown } from '@/components/Markdown';
 import { ObjectiveChecklist } from '@/components/ObjectiveChecklist';
 import { StudyStatusBadge, StudyLevelBadge } from '@/features/studies/StudyMeta';
 import { StudySections } from '@/features/studies/StudySections';
+import { FavoriteButton } from '@/features/favorites/FavoriteButton';
 import {
   useStudy,
   useDeleteStudy,
@@ -91,6 +92,13 @@ export function StudyDetailPage() {
           </div>
         </div>
         <div className="flex shrink-0 gap-2">
+          <FavoriteButton
+            type="STUDY"
+            entityId={s.id}
+            title={s.name}
+            subtitle={s.technology}
+            url={`/estudos/${s.id}`}
+          />
           <Link
             to={`/estudos/${s.id}/editar`}
             className={buttonVariants({ variant: 'outline', size: 'sm' })}

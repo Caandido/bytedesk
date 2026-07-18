@@ -23,6 +23,7 @@ import {
   useAddRoadmapItem,
   useUpdateRoadmapItem,
 } from '@/features/roadmaps/useRoadmaps';
+import { FavoriteButton } from '@/features/favorites/FavoriteButton';
 
 /** Detalhe de um roadmap: cabeçalho, progresso e itens da trilha. */
 export function RoadmapDetailPage() {
@@ -83,6 +84,13 @@ export function RoadmapDetailPage() {
           </div>
         </div>
         <div className="flex shrink-0 gap-2">
+          <FavoriteButton
+            type="ROADMAP"
+            entityId={r.id}
+            title={r.name}
+            subtitle={r.category}
+            url={`/roadmaps/${r.id}`}
+          />
           <Link
             to={`/roadmaps/${r.id}/editar`}
             className={buttonVariants({ variant: 'outline', size: 'sm' })}

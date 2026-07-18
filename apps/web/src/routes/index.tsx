@@ -109,6 +109,9 @@ const DiarioPage = lazy(() =>
 const ErrosPage = lazy(() =>
   import('@/pages/ErrosPage').then((m) => ({ default: m.ErrosPage })),
 );
+const FavoritosPage = lazy(() =>
+  import('@/pages/FavoritosPage').then((m) => ({ default: m.FavoritosPage })),
+);
 const NotFoundPage = lazy(() =>
   import('@/pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage })),
 );
@@ -119,6 +122,7 @@ export const router = createBrowserRouter([
     element: <AppLayout />,
     children: [
       { index: true, element: <DashboardPage /> },
+      { path: 'favoritos', element: <FavoritosPage /> },
       { path: 'estudos', element: <StudiesPage /> },
       { path: 'estudos/novo', element: <StudyFormPage /> },
       { path: 'estudos/:id', element: <StudyDetailPage /> },

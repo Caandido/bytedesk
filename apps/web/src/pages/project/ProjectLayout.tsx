@@ -17,6 +17,7 @@ import {
   ProjectPriorityBadge,
 } from '@/features/projects/ProjectMeta';
 import { useProject, useDeleteProject } from '@/features/projects/useProjects';
+import { FavoriteButton } from '@/features/favorites/FavoriteButton';
 
 /** Contexto do Outlet: o projeto carregado, consumido pelas abas. */
 export interface ProjectOutletContext {
@@ -94,6 +95,13 @@ export function ProjectLayout() {
           </div>
         </div>
         <div className="flex shrink-0 gap-2">
+          <FavoriteButton
+            type="PROJECT"
+            entityId={p.id}
+            title={p.name}
+            subtitle={p.client}
+            url={`/projetos/${p.id}`}
+          />
           <Link
             to={`/projetos/${p.id}/editar`}
             className={buttonVariants({ variant: 'outline', size: 'sm' })}

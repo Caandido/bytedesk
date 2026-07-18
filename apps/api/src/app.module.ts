@@ -18,6 +18,7 @@ import { DiaryModule } from './modules/diary/diary.module';
 import { IdeasModule } from './modules/ideas/ideas.module';
 import { ErrorsModule } from './modules/errors/errors.module';
 import { ArchitectureModule } from './modules/architecture/architecture.module';
+import { FavoritesModule } from './modules/favorites/favorites.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { ArchitectureModule } from './modules/architecture/architecture.module';
     IdeasModule,
     ErrorsModule,
     ArchitectureModule,
+    FavoritesModule,
   ],
 })
 export class AppModule {}

@@ -1,5 +1,6 @@
 import {
   LayoutDashboard,
+  Star,
   GraduationCap,
   Map,
   FolderKanban,
@@ -24,6 +25,7 @@ export interface NavItem {
  */
 export const navItems: NavItem[] = [
   { label: 'Dashboard', path: '/', icon: LayoutDashboard },
+  { label: 'Favoritos', path: '/favoritos', icon: Star },
   { label: 'Estudos', path: '/estudos', icon: GraduationCap },
   { label: 'Roadmaps', path: '/roadmaps', icon: Map },
   { label: 'Projetos', path: '/projetos', icon: FolderKanban },
