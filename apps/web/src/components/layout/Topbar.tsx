@@ -1,7 +1,8 @@
 import { Search } from 'lucide-react';
 import { useUIStore } from '@/stores/ui';
+import { PomodoroWidget } from '@/features/pomodoro/PomodoroWidget';
 
-/** Barra superior com o gatilho da Pesquisa Global (Ctrl+K). */
+/** Barra superior com a Pesquisa Global (Ctrl+K) e o Pomodoro. */
 export function Topbar() {
   const setCommandOpen = useUIStore((s) => s.setCommandOpen);
 
@@ -18,6 +19,10 @@ export function Topbar() {
           Ctrl K
         </kbd>
       </button>
+
+      <div className="ml-auto">
+        <PomodoroWidget />
+      </div>
     </header>
   );
 }
