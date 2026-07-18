@@ -9,13 +9,16 @@ import {
   Loader2,
   ArrowUpRight,
   FolderKanban,
+  RefreshCw,
+  Star,
 } from 'lucide-react';
 import type { Project } from '@devflow/shared';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { GitDialog } from '@/features/git/GitDialog';
-import { useProjects } from '@/features/projects/useProjects';
+import { useProjects, useUpdateProject } from '@/features/projects/useProjects';
+import { fetchGitHubRepo, isGitHubUrl } from '@/features/git/github';
 
 /**
  * Visão de Git de todos os projetos (sem integração — campos manuais). Lista cada
@@ -75,6 +78,31 @@ function GitCard({
   project: Project;
   onEdit: (p: Project) => void;
 }) {
+  const updateProject = useUpdateProject(project.id);
+  const [syncing, setSyncing] = useState(false);
+  const [syncError, setSyncError] = useState<string | null>(null);
+  const [stars, setStars] = useState<number | null>(null);
+
+  const canSync = isGitHubUrl(project.repoUrl);
+
+  const handleSync = async () => {
+    setSyncing(true);
+    setSyncError(null);
+    try {
+      const info = await fetchGitHubRepo(project.repoUrl);
+      setStars(info.stars);
+      updateProject.mutate({
+        gitBranch: info.branch,
+        lastCommit: info.lastCommit,
+        gitTags: info.tags,
+      });
+    } catch (e) {
+      setSyncError(e instanceof Error ? e.message : 'Falha ao sincronizar.');
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   const hasGit =
     project.repoUrl ||
     project.gitBranch ||
@@ -92,10 +120,36 @@ function GitCard({
           >
             {project.name}
           </Link>
-          <Button variant="outline" size="sm" onClick={() => onEdit(project)}>
-            <Pencil className="size-4" /> Editar
-          </Button>
+          <div className="flex gap-2">
+            {canSync && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleSync}
+                disabled={syncing}
+                title="Sincronizar dados do GitHub"
+              >
+                {syncing ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <RefreshCw className="size-4" />
+                )}
+                Sincronizar
+              </Button>
+            )}
+            <Button variant="outline" size="sm" onClick={() => onEdit(project)}>
+              <Pencil className="size-4" /> Editar
+            </Button>
+          </div>
         </div>
+
+        {syncError && <p className="text-xs text-danger">{syncError}</p>}
+        {stars !== null && (
+          <p className="flex items-center gap-1 text-xs text-muted-foreground">
+            <Star className="size-3 fill-warning text-warning" /> {stars} stars
+            no GitHub
+          </p>
+        )}
 
         {!hasGit ? (
           <p className="text-sm text-muted-foreground">
