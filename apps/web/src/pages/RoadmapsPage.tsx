@@ -1,18 +1,14 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Search, Trash2, Loader2, Map, ListChecks } from 'lucide-react';
+import { Plus, Search, Trash2, Loader2, Map, ListChecks, Download } from 'lucide-react';
 import type { Roadmap } from '@devflow/shared';
-import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import {
-  useRoadmaps,
-  useDeleteRoadmap,
-  useRoadmapTemplates,
-} from '@/features/roadmaps/useRoadmaps';
+import { useRoadmaps, useDeleteRoadmap } from '@/features/roadmaps/useRoadmaps';
+import { ImportRoadmapDialog } from '@/features/roadmaps/ImportRoadmapDialog';
 
 type SortKey = 'recent' | 'name' | 'progress';
 
@@ -20,11 +16,11 @@ type SortKey = 'recent' | 'name' | 'progress';
 export function RoadmapsPage() {
   const roadmaps = useRoadmaps();
   const deleteRoadmap = useDeleteRoadmap();
-  const templates = useRoadmapTemplates();
 
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('ALL');
   const [sort, setSort] = useState<SortKey>('recent');
+  const [importOpen, setImportOpen] = useState(false);
 
   const categories = useMemo(() => {
     const set = new Set<string>();
@@ -80,9 +76,14 @@ export function RoadmapsPage() {
             Trilhas de aprendizado com itens, recursos e progresso.
           </p>
         </div>
-        <Link to="/roadmaps/novo" className={cn(buttonVariants(), 'shrink-0')}>
-          <Plus className="size-4" /> Novo roadmap
-        </Link>
+        <div className="flex shrink-0 gap-2">
+          <Button variant="outline" onClick={() => setImportOpen(true)}>
+            <Download className="size-4" /> Importar pronto
+          </Button>
+          <Link to="/roadmaps/novo" className={buttonVariants()}>
+            <Plus className="size-4" /> Novo roadmap
+          </Link>
+        </div>
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -135,11 +136,17 @@ export function RoadmapsPage() {
           <CardContent className="flex flex-col items-center gap-3 py-16 text-center">
             <Map className="size-10 text-primary" />
             <p className="text-sm text-muted-foreground">
-              Você ainda não tem roadmaps. Crie a primeira trilha.
+              Você ainda não tem roadmaps. Crie a sua trilha do zero — com itens,
+              links e mapa mental — ou importe uma pronta.
             </p>
-            <Link to="/roadmaps/novo" className={buttonVariants()}>
-              <Plus className="size-4" /> Novo roadmap
-            </Link>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setImportOpen(true)}>
+                <Download className="size-4" /> Importar pronto
+              </Button>
+              <Link to="/roadmaps/novo" className={buttonVariants()}>
+                <Plus className="size-4" /> Novo roadmap
+              </Link>
+            </div>
           </CardContent>
         </Card>
       )}
@@ -166,61 +173,10 @@ export function RoadmapsPage() {
         </div>
       )}
 
-      {/* Guias prontos (roadmap.sh) */}
-      <div className="space-y-3 pt-4">
-        <div>
-          <h2 className="text-lg font-semibold">Guias prontos</h2>
-          <p className="text-sm text-muted-foreground">
-            Trilhas completas inspiradas no{' '}
-            <a
-              href="https://roadmap.sh"
-              target="_blank"
-              rel="noreferrer"
-              className="text-info hover:underline"
-            >
-              roadmap.sh
-            </a>{' '}
-            (© Kamran Ahmed e colaboradores) — abra para ver os tópicos com
-            descrição e links oficiais, ou importe para acompanhar seu progresso.
-            Cada guia traz o link direto para o roadmap original.
-          </p>
-        </div>
-        {templates.isLoading && (
-          <p className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Loader2 className="size-4 animate-spin" /> Carregando guias…
-          </p>
-        )}
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {(templates.data ?? []).map((template) => (
-            <Link
-              key={template.id}
-              to={`/roadmaps/guia/${template.id}`}
-              className="group block"
-            >
-              <Card className="h-full transition-colors group-hover:border-primary/50">
-                <CardContent className="flex h-full flex-col gap-2 p-4">
-                  <div className="flex items-center gap-2">
-                    <Map className="size-4 shrink-0 text-primary" />
-                    <h3 className="font-semibold leading-tight">
-                      {template.name}
-                    </h3>
-                  </div>
-                  <p className="line-clamp-2 text-xs text-muted-foreground">
-                    {template.description}
-                  </p>
-                  <div className="mt-auto flex items-center gap-2 pt-1">
-                    <Badge variant="outline">{template.category}</Badge>
-                    <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <ListChecks className="size-3.5" /> {template.itemCount}{' '}
-                      tópicos
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
-        </div>
-      </div>
+      <ImportRoadmapDialog
+        open={importOpen}
+        onClose={() => setImportOpen(false)}
+      />
     </div>
   );
 }

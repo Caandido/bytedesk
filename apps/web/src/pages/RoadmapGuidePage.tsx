@@ -137,7 +137,7 @@ export function RoadmapGuidePage() {
 
       {view === 'map' && (
         <div className="space-y-2">
-          <RoadmapMindmap template={t} />
+          <RoadmapMindmap name={t.name} items={t.items} />
           <p className="text-center text-xs text-muted-foreground">
             Nós em destaque (branco) têm roadmap dedicado — clique para navegar.
           </p>

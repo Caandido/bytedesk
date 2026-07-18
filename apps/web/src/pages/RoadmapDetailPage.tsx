@@ -9,6 +9,8 @@ import {
   Clock,
   ExternalLink,
   GripVertical,
+  Network,
+  List,
 } from 'lucide-react';
 import type { Roadmap, RoadmapItem } from '@devflow/shared';
 import { cn } from '@/lib/utils';
@@ -17,6 +19,7 @@ import { Button, buttonVariants } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { RoadmapItemDialog } from '@/features/roadmaps/RoadmapItemDialog';
+import { RoadmapMindmap } from '@/features/roadmaps/RoadmapMindmap';
 import {
   useRoadmap,
   useDeleteRoadmap,
@@ -33,6 +36,7 @@ export function RoadmapDetailPage() {
   const deleteRoadmap = useDeleteRoadmap();
 
   const [editingItem, setEditingItem] = useState<RoadmapItem | null>(null);
+  const [view, setView] = useState<'list' | 'map'>('list');
 
   if (roadmap.isLoading) {
     return (
@@ -114,7 +118,56 @@ export function RoadmapDetailPage() {
         </p>
       )}
 
-      <RoadmapItems roadmap={r} onEditItem={setEditingItem} />
+      {/* Alternador Lista / Mapa mental */}
+      <div className="inline-flex rounded-md border border-border p-0.5">
+        <button
+          type="button"
+          onClick={() => setView('list')}
+          className={cn(
+            'flex items-center gap-1.5 rounded px-3 py-1 text-sm font-medium transition-colors',
+            view === 'list'
+              ? 'bg-accent text-accent-foreground'
+              : 'text-muted-foreground hover:text-foreground',
+          )}
+        >
+          <List className="size-4" /> Lista
+        </button>
+        <button
+          type="button"
+          onClick={() => setView('map')}
+          className={cn(
+            'flex items-center gap-1.5 rounded px-3 py-1 text-sm font-medium transition-colors',
+            view === 'map'
+              ? 'bg-accent text-accent-foreground'
+              : 'text-muted-foreground hover:text-foreground',
+          )}
+        >
+          <Network className="size-4" /> Mapa mental
+        </button>
+      </div>
+
+      {view === 'list' ? (
+        <RoadmapItems roadmap={r} onEditItem={setEditingItem} />
+      ) : (r.items?.length ?? 0) > 0 ? (
+        <div className="space-y-2">
+          <RoadmapMindmap
+            name={r.name}
+            items={(r.items ?? []).map((i) => ({
+              title: i.title,
+              done: i.done,
+            }))}
+          />
+          <p className="text-center text-xs text-muted-foreground">
+            Itens esmaecidos já foram concluídos. Edite os itens na visão em lista.
+          </p>
+        </div>
+      ) : (
+        <Card>
+          <CardContent className="py-12 text-center text-sm text-muted-foreground">
+            Adicione itens (na visão em lista) para ver o mapa mental.
+          </CardContent>
+        </Card>
+      )}
 
       <RoadmapItemDialog
         roadmapId={r.id}
