@@ -17,3 +17,4 @@ export * from './task';
 export * from './bug';
 export * from './dashboard';
 export * from './search';
+export * from './doc';

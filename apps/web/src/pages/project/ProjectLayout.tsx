@@ -25,6 +25,7 @@ const tabs = [
   { to: '', label: 'Visão geral', end: true },
   { to: 'tarefas', label: 'Tarefas', end: false },
   { to: 'bugs', label: 'Bugs', end: false },
+  { to: 'docs', label: 'Documentação', end: false },
 ];
 
 /**

@@ -9,6 +9,7 @@ import { TasksModule } from './modules/tasks/tasks.module';
 import { BugsModule } from './modules/bugs/bugs.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { SearchModule } from './modules/search/search.module';
+import { DocsModule } from './modules/docs/docs.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { SearchModule } from './modules/search/search.module';
     BugsModule,
     DashboardModule,
     SearchModule,
+    DocsModule,
   ],
 })
 export class AppModule {}
