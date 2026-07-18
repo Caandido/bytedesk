@@ -52,6 +52,11 @@ const ProjectBugsPage = lazy(() =>
     default: m.ProjectBugsPage,
   })),
 );
+const ProjectIdeasPage = lazy(() =>
+  import('@/pages/project/ProjectIdeasPage').then((m) => ({
+    default: m.ProjectIdeasPage,
+  })),
+);
 const ProjectVersionsPage = lazy(() =>
   import('@/pages/project/ProjectVersionsPage').then((m) => ({
     default: m.ProjectVersionsPage,
@@ -115,6 +120,7 @@ export const router = createBrowserRouter([
           { index: true, element: <ProjectOverviewPage /> },
           { path: 'tarefas', element: <ProjectTasksPage /> },
           { path: 'bugs', element: <ProjectBugsPage /> },
+          { path: 'ideias', element: <ProjectIdeasPage /> },
           { path: 'versoes', element: <ProjectVersionsPage /> },
           { path: 'docs', element: <ProjectDocsPage /> },
         ],

@@ -15,6 +15,7 @@ import { RoadmapsModule } from './modules/roadmaps/roadmaps.module';
 import { WikiModule } from './modules/wiki/wiki.module';
 import { StatsModule } from './modules/stats/stats.module';
 import { DiaryModule } from './modules/diary/diary.module';
+import { IdeasModule } from './modules/ideas/ideas.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { DiaryModule } from './modules/diary/diary.module';
     WikiModule,
     StatsModule,
     DiaryModule,
+    IdeasModule,
   ],
 })
 export class AppModule {}
