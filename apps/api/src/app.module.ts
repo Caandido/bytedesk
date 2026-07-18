@@ -12,6 +12,7 @@ import { SearchModule } from './modules/search/search.module';
 import { DocsModule } from './modules/docs/docs.module';
 import { VersionsModule } from './modules/versions/versions.module';
 import { RoadmapsModule } from './modules/roadmaps/roadmaps.module';
+import { WikiModule } from './modules/wiki/wiki.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { RoadmapsModule } from './modules/roadmaps/roadmaps.module';
     DocsModule,
     VersionsModule,
     RoadmapsModule,
+    WikiModule,
   ],
 })
 export class AppModule {}

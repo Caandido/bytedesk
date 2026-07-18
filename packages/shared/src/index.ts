@@ -20,3 +20,4 @@ export * from './search';
 export * from './doc';
 export * from './version';
 export * from './roadmap';
+export * from './wiki';

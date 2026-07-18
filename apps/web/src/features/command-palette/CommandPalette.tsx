@@ -8,6 +8,7 @@ import {
   ListChecks,
   Bug as BugIcon,
   Map as MapIcon,
+  BookOpen,
   Loader2,
   type LucideIcon,
 } from 'lucide-react';
@@ -25,6 +26,7 @@ const quickActions = [
   { label: 'Novo estudo', path: '/estudos/novo', icon: Plus },
   { label: 'Novo projeto', path: '/projetos/novo', icon: Plus },
   { label: 'Novo roadmap', path: '/roadmaps/novo', icon: Plus },
+  { label: 'Nova página (Conhecimento)', path: '/conhecimento', icon: Plus },
 ];
 
 const RESULT_ICON: Record<SearchResultType, LucideIcon> = {
@@ -33,6 +35,7 @@ const RESULT_ICON: Record<SearchResultType, LucideIcon> = {
   task: ListChecks,
   bug: BugIcon,
   roadmap: MapIcon,
+  wiki: BookOpen,
 };
 
 const RESULT_ORDER: SearchResultType[] = [
@@ -41,6 +44,7 @@ const RESULT_ORDER: SearchResultType[] = [
   'task',
   'bug',
   'roadmap',
+  'wiki',
 ];
 
 function routeFor(r: SearchResult): string {
@@ -55,6 +59,8 @@ function routeFor(r: SearchResult): string {
       return `/projetos/${r.projectId}/bugs`;
     case 'roadmap':
       return `/roadmaps/${r.id}`;
+    case 'wiki':
+      return '/conhecimento';
   }
 }
 

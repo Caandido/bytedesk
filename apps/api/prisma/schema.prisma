@@ -262,6 +262,24 @@ model ProjectDoc {
   @@map("project_docs")
 }
 
+// ─── Módulo Conhecimento (Wiki) ──────────────────────────────────────────────
+
+/// Página da wiki pessoal (conhecimento) em Markdown.
+model WikiPage {
+  id        String   @id @default(cuid())
+  title     String
+  content   String   @default("") // Markdown
+  category  String   @default("")
+  tags      String[] @default([])
+  favorite  Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([category])
+  @@map("wiki_pages")
+}
+
 // ─── Módulo Roadmaps ─────────────────────────────────────────────────────────
 
 /// Trilha de aprendizado com itens ordenados e progresso.

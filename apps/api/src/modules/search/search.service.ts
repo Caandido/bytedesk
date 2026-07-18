@@ -20,7 +20,8 @@ export class SearchService {
 
     const like: Prisma.StringFilter = { contains: term, mode: 'insensitive' };
 
-    const [studies, projects, tasks, bugs, roadmaps] = await Promise.all([
+    const [studies, projects, tasks, bugs, roadmaps, wikiPages] =
+      await Promise.all([
       this.prisma.study.findMany({
         where: {
           OR: [
@@ -75,6 +76,12 @@ export class SearchService {
         take: PER_TYPE,
         select: { id: true, name: true, category: true },
       }),
+      this.prisma.wikiPage.findMany({
+        where: { OR: [{ title: like }, { category: like }] },
+        orderBy: { updatedAt: 'desc' },
+        take: PER_TYPE,
+        select: { id: true, title: true, category: true },
+      }),
     ]);
 
     return [
@@ -109,6 +116,12 @@ export class SearchService {
         id: r.id,
         title: r.name,
         subtitle: r.category || 'Roadmap',
+      })),
+      ...wikiPages.map<SearchResult>((w) => ({
+        type: 'wiki',
+        id: w.id,
+        title: w.title,
+        subtitle: w.category || 'Conhecimento',
       })),
     ];
   }

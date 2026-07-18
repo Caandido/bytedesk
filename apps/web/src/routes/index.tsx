@@ -75,6 +75,11 @@ const RoadmapDetailPage = lazy(() =>
     default: m.RoadmapDetailPage,
   })),
 );
+const ConhecimentoPage = lazy(() =>
+  import('@/pages/ConhecimentoPage').then((m) => ({
+    default: m.ConhecimentoPage,
+  })),
+);
 const PlaceholderPage = lazy(() =>
   import('@/pages/PlaceholderPage').then((m) => ({
     default: m.PlaceholderPage,
@@ -112,15 +117,7 @@ export const router = createBrowserRouter([
       { path: 'roadmaps/novo', element: <RoadmapFormPage /> },
       { path: 'roadmaps/:id', element: <RoadmapDetailPage /> },
       { path: 'roadmaps/:id/editar', element: <RoadmapFormPage /> },
-      {
-        path: 'conhecimento',
-        element: (
-          <PlaceholderPage
-            title="Conhecimento"
-            description="Sua wiki pessoal de programação."
-          />
-        ),
-      },
+      { path: 'conhecimento', element: <ConhecimentoPage /> },
       {
         path: 'estatisticas',
         element: (
