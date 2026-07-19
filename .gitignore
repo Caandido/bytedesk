@@ -43,3 +43,7 @@ apps/desktop/release/
 *.exe
 *.appx
 *.dmg
+
+# Extensão VSCode (compilado + pacote)
+apps/vscode/out/
+*.vsix

@@ -1,0 +1,85 @@
+{
+  "name": "bytedesk-vscode",
+  "displayName": "ByteDesk",
+  "description": "Anote estudos e salve códigos no ByteDesk sem sair do VSCode.",
+  "version": "1.0.0",
+  "publisher": "bytedesk",
+  "license": "SEE LICENSE IN README.md",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Caandido/bytedesk"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": ["Other"],
+  "main": "./out/extension.js",
+  "activationEvents": ["onView:bytedesk.studies"],
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "bytedesk",
+          "title": "ByteDesk",
+          "icon": "media/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "bytedesk": [{ "id": "bytedesk.studies", "name": "Estudos" }]
+    },
+    "commands": [
+      { "command": "bytedesk.login", "title": "ByteDesk: Entrar" },
+      { "command": "bytedesk.logout", "title": "ByteDesk: Sair" },
+      { "command": "bytedesk.selectWorkspace", "title": "ByteDesk: Escolher workspace" },
+      {
+        "command": "bytedesk.saveSelection",
+        "title": "ByteDesk: Salvar seleção como código no estudo"
+      },
+      { "command": "bytedesk.newStudy", "title": "ByteDesk: Novo estudo", "icon": "$(add)" },
+      { "command": "bytedesk.refresh", "title": "ByteDesk: Atualizar", "icon": "$(refresh)" },
+      { "command": "bytedesk.openStudy", "title": "ByteDesk: Abrir estudo no site", "icon": "$(link-external)" }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "bytedesk.saveSelection",
+          "when": "editorHasSelection",
+          "group": "bytedesk@1"
+        }
+      ],
+      "view/title": [
+        { "command": "bytedesk.newStudy", "when": "view == bytedesk.studies", "group": "navigation@1" },
+        { "command": "bytedesk.refresh", "when": "view == bytedesk.studies", "group": "navigation@2" }
+      ],
+      "view/item/context": [
+        {
+          "command": "bytedesk.openStudy",
+          "when": "view == bytedesk.studies && viewItem == study",
+          "group": "inline"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "ByteDesk",
+      "properties": {
+        "bytedesk.apiUrl": {
+          "type": "string",
+          "default": "https://bytedesk-two.vercel.app/api",
+          "description": "URL base da API do ByteDesk."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "package": "vsce package --no-dependencies -o bytedesk.vsix"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@types/vscode": "^1.85.0",
+    "@vscode/vsce": "^3.2.1",
+    "typescript": "^5.5.4"
+  }
+}
