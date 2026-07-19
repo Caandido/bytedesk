@@ -15,6 +15,9 @@ import {
   UpdateObjectiveDto,
   CreateSectionDto,
   UpdateSectionDto,
+  CreateCodeFileDto,
+  UpdateCodeFileDto,
+  LinkProjectDto,
 } from './dto/study.dto';
 import { WorkspaceId } from '../auth/auth.decorators';
 
@@ -114,5 +117,55 @@ export class StudiesController {
     @WorkspaceId() workspaceId: string,
   ) {
     return this.studiesService.removeSection(id, sectionId, workspaceId);
+  }
+
+  // ─── Arquivos de código ────────────────────────────────────────────────────
+
+  @Post(':id/code')
+  addCodeFile(
+    @Param('id') id: string,
+    @Body() dto: CreateCodeFileDto,
+    @WorkspaceId() workspaceId: string,
+  ) {
+    return this.studiesService.addCodeFile(id, dto, workspaceId);
+  }
+
+  @Patch(':id/code/:fileId')
+  updateCodeFile(
+    @Param('id') id: string,
+    @Param('fileId') fileId: string,
+    @Body() dto: UpdateCodeFileDto,
+    @WorkspaceId() workspaceId: string,
+  ) {
+    return this.studiesService.updateCodeFile(id, fileId, dto, workspaceId);
+  }
+
+  @Delete(':id/code/:fileId')
+  removeCodeFile(
+    @Param('id') id: string,
+    @Param('fileId') fileId: string,
+    @WorkspaceId() workspaceId: string,
+  ) {
+    return this.studiesService.removeCodeFile(id, fileId, workspaceId);
+  }
+
+  // ─── Projetos vinculados ───────────────────────────────────────────────────
+
+  @Post(':id/projects')
+  linkProject(
+    @Param('id') id: string,
+    @Body() dto: LinkProjectDto,
+    @WorkspaceId() workspaceId: string,
+  ) {
+    return this.studiesService.linkProject(id, dto.projectId, workspaceId);
+  }
+
+  @Delete(':id/projects/:projectId')
+  unlinkProject(
+    @Param('id') id: string,
+    @Param('projectId') projectId: string,
+    @WorkspaceId() workspaceId: string,
+  ) {
+    return this.studiesService.unlinkProject(id, projectId, workspaceId);
   }
 }

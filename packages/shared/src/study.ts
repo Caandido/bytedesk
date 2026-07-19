@@ -88,6 +88,45 @@ export type CreateSectionInput = z.input<typeof createSectionSchema>;
 export type UpdateSectionInput = z.input<typeof updateSectionSchema>;
 export type StudySection = z.infer<typeof sectionSchema>;
 
+// ─── Arquivos de código ──────────────────────────────────────────────────────
+
+/** Payload para criar um arquivo de código dentro do estudo. */
+export const createCodeFileSchema = z.object({
+  name: z.string().trim().min(1, 'O nome é obrigatório').max(200),
+  language: z.string().trim().max(40).optional().default(''),
+  content: z.string().max(500_000).optional().default(''),
+});
+
+/** Payload para atualizar um arquivo de código. */
+export const updateCodeFileSchema = createCodeFileSchema.partial();
+
+/** Entidade completa de arquivo de código retornada pela API. */
+export const codeFileSchema = z
+  .object({
+    id: idSchema,
+    studyId: idSchema,
+    name: z.string(),
+    language: z.string(),
+    content: z.string(),
+    position: z.number().int(),
+  })
+  .merge(timestampsSchema);
+
+export type CreateCodeFileInput = z.input<typeof createCodeFileSchema>;
+export type UpdateCodeFileInput = z.input<typeof updateCodeFileSchema>;
+export type StudyCodeFile = z.infer<typeof codeFileSchema>;
+
+/** Resumo de um projeto vinculado ao estudo (para listar/abrir). */
+export const studyProjectSchema = z.object({
+  id: idSchema,
+  name: z.string(),
+});
+export type StudyProjectRef = z.infer<typeof studyProjectSchema>;
+
+/** Payload para vincular um projeto a um estudo. */
+export const linkProjectSchema = z.object({ projectId: idSchema });
+export type LinkProjectInput = z.input<typeof linkProjectSchema>;
+
 // ─── Estudo ──────────────────────────────────────────────────────────────────
 
 /** Payload para criar um estudo. Só `name` é obrigatório; o resto tem default. */
@@ -126,6 +165,8 @@ export const studySchema = z
     startDate: z.coerce.date().nullable(),
     objectives: z.array(objectiveSchema).optional(),
     sections: z.array(sectionSchema).optional(),
+    codeFiles: z.array(codeFileSchema).optional(),
+    projects: z.array(studyProjectSchema).optional(),
   })
   .merge(timestampsSchema);
 

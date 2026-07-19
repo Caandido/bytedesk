@@ -26,6 +26,8 @@ import { Markdown } from '@/components/Markdown';
 import { ObjectiveChecklist } from '@/components/ObjectiveChecklist';
 import { StudyStatusBadge, StudyLevelBadge } from '@/features/studies/StudyMeta';
 import { StudySections } from '@/features/studies/StudySections';
+import { StudyCodeFiles } from '@/features/studies/StudyCodeFiles';
+import { StudyProjects } from '@/features/studies/StudyProjects';
 import { FavoriteButton } from '@/features/favorites/FavoriteButton';
 import {
   useStudy,
@@ -175,6 +177,8 @@ export function StudyDetailPage() {
       )}
 
       <ObjectivesSection study={s} />
+      <StudyCodeFiles study={s} />
+      <StudyProjects study={s} />
       <StudySections study={s} />
       <NotesSection study={s} />
     </div>

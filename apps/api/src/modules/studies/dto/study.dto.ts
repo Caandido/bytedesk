@@ -6,6 +6,9 @@ import {
   updateObjectiveSchema,
   createSectionSchema,
   updateSectionSchema,
+  createCodeFileSchema,
+  updateCodeFileSchema,
+  linkProjectSchema,
 } from '@devflow/shared';
 
 /**
@@ -18,3 +21,6 @@ export class CreateObjectiveDto extends createZodDto(createObjectiveSchema) {}
 export class UpdateObjectiveDto extends createZodDto(updateObjectiveSchema) {}
 export class CreateSectionDto extends createZodDto(createSectionSchema) {}
 export class UpdateSectionDto extends createZodDto(updateSectionSchema) {}
+export class CreateCodeFileDto extends createZodDto(createCodeFileSchema) {}
+export class UpdateCodeFileDto extends createZodDto(updateCodeFileSchema) {}
+export class LinkProjectDto extends createZodDto(linkProjectSchema) {}

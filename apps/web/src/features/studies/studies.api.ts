@@ -3,12 +3,15 @@ import type {
   Study,
   StudyObjective,
   StudySection,
+  StudyCodeFile,
   CreateStudyInput,
   UpdateStudyInput,
   CreateObjectiveInput,
   UpdateObjectiveInput,
   CreateSectionInput,
   UpdateSectionInput,
+  CreateCodeFileInput,
+  UpdateCodeFileInput,
 } from '@devflow/shared';
 
 /**
@@ -75,6 +78,38 @@ export const studiesApi = {
 
   removeSection: (studyId: string, sectionId: string) =>
     apiFetch<StudySection>(`/studies/${studyId}/sections/${sectionId}`, {
+      method: 'DELETE',
+    }),
+
+  addCodeFile: (studyId: string, input: CreateCodeFileInput) =>
+    apiFetch<StudyCodeFile>(`/studies/${studyId}/code`, {
+      method: 'POST',
+      body: JSON.stringify(input),
+    }),
+
+  updateCodeFile: (
+    studyId: string,
+    fileId: string,
+    input: UpdateCodeFileInput,
+  ) =>
+    apiFetch<StudyCodeFile>(`/studies/${studyId}/code/${fileId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(input),
+    }),
+
+  removeCodeFile: (studyId: string, fileId: string) =>
+    apiFetch<StudyCodeFile>(`/studies/${studyId}/code/${fileId}`, {
+      method: 'DELETE',
+    }),
+
+  linkProject: (studyId: string, projectId: string) =>
+    apiFetch<Study>(`/studies/${studyId}/projects`, {
+      method: 'POST',
+      body: JSON.stringify({ projectId }),
+    }),
+
+  unlinkProject: (studyId: string, projectId: string) =>
+    apiFetch<Study>(`/studies/${studyId}/projects/${projectId}`, {
       method: 'DELETE',
     }),
 };

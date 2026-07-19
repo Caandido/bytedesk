@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { AuthResponse, AuthUser, Session, Workspace } from '@devflow/shared';
 import { queryClient } from '@/lib/queryClient';
+import { clearPersistedCache } from '@/lib/persister';
 
 /**
  * Sessão autenticada persistida em localStorage. O token e o workspace ativo são
@@ -166,6 +167,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   logout: () => {
     persist(null);
     queryClient.clear();
+    void clearPersistedCache();
     set({ token: null, user: null, workspaces: [], activeWorkspaceId: null });
   },
 }));

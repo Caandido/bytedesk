@@ -8,12 +8,16 @@ import {
   UpdateObjectiveDto,
   CreateSectionDto,
   UpdateSectionDto,
+  CreateCodeFileDto,
+  UpdateCodeFileDto,
 } from './dto/study.dto';
 
-/** Sempre trazemos objetivos e seções ordenados junto do estudo. */
+/** Sempre trazemos objetivos, seções, códigos e projetos vinculados do estudo. */
 const studyInclude = {
   objectives: { orderBy: { position: 'asc' } },
   sections: { orderBy: { position: 'asc' } },
+  codeFiles: { orderBy: { position: 'asc' } },
+  projects: { select: { id: true, name: true }, orderBy: { name: 'asc' } },
 } satisfies Prisma.StudyInclude;
 
 /**
@@ -143,6 +147,72 @@ export class StudiesService {
     return this.prisma.studySection.delete({ where: { id: sectionId } });
   }
 
+  // ─── Arquivos de código ────────────────────────────────────────────────────
+
+  async addCodeFile(
+    studyId: string,
+    dto: CreateCodeFileDto,
+    workspaceId: string,
+  ) {
+    await this.ensureStudy(studyId, workspaceId);
+    const count = await this.prisma.studyCodeFile.count({ where: { studyId } });
+    return this.prisma.studyCodeFile.create({
+      data: {
+        studyId,
+        name: dto.name,
+        language: dto.language,
+        content: dto.content,
+        position: count,
+      },
+    });
+  }
+
+  async updateCodeFile(
+    studyId: string,
+    fileId: string,
+    dto: UpdateCodeFileDto,
+    workspaceId: string,
+  ) {
+    await this.ensureCodeFile(studyId, fileId, workspaceId);
+    return this.prisma.studyCodeFile.update({
+      where: { id: fileId },
+      data: dto,
+    });
+  }
+
+  async removeCodeFile(studyId: string, fileId: string, workspaceId: string) {
+    await this.ensureCodeFile(studyId, fileId, workspaceId);
+    return this.prisma.studyCodeFile.delete({ where: { id: fileId } });
+  }
+
+  // ─── Projetos vinculados (n-n) ─────────────────────────────────────────────
+
+  async linkProject(studyId: string, projectId: string, workspaceId: string) {
+    await this.ensureStudy(studyId, workspaceId);
+    // Só vincula projetos do mesmo workspace.
+    const project = await this.prisma.project.findFirst({
+      where: { id: projectId, workspaceId },
+      select: { id: true },
+    });
+    if (!project) {
+      throw new NotFoundException('Projeto não encontrado neste workspace');
+    }
+    return this.prisma.study.update({
+      where: { id: studyId },
+      data: { projects: { connect: { id: projectId } } },
+      include: studyInclude,
+    });
+  }
+
+  async unlinkProject(studyId: string, projectId: string, workspaceId: string) {
+    await this.ensureStudy(studyId, workspaceId);
+    return this.prisma.study.update({
+      where: { id: studyId },
+      data: { projects: { disconnect: { id: projectId } } },
+      include: studyInclude,
+    });
+  }
+
   // ─── Helpers ───────────────────────────────────────────────────────────────
 
   /**
@@ -202,6 +272,23 @@ export class StudiesService {
     if (!section || section.studyId !== studyId) {
       throw new NotFoundException(
         `Seção ${sectionId} não encontrada no estudo ${studyId}`,
+      );
+    }
+  }
+
+  private async ensureCodeFile(
+    studyId: string,
+    fileId: string,
+    workspaceId: string,
+  ): Promise<void> {
+    await this.ensureStudy(studyId, workspaceId);
+    const file = await this.prisma.studyCodeFile.findUnique({
+      where: { id: fileId },
+      select: { studyId: true },
+    });
+    if (!file || file.studyId !== studyId) {
+      throw new NotFoundException(
+        `Arquivo ${fileId} não encontrado no estudo ${studyId}`,
       );
     }
   }

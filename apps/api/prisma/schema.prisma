@@ -163,6 +163,8 @@ model Study {
 
   objectives StudyObjective[]
   sections   StudySection[]
+  codeFiles  StudyCodeFile[]
+  projects   Project[] // projetos vinculados a este estudo (n-n)
 
   workspaceId String
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
@@ -172,6 +174,23 @@ model Study {
 
   @@index([workspaceId])
   @@map("studies")
+}
+
+/// Arquivo de código guardado dentro de um estudo (nome + linguagem + conteúdo).
+model StudyCodeFile {
+  id       String @id @default(cuid())
+  studyId  String
+  study    Study  @relation(fields: [studyId], references: [id], onDelete: Cascade)
+  name     String // ex.: "exemplo.tsx"
+  language String @default("") // ex.: "tsx", "python"
+  content  String @default("") // o código
+  position Int    @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([studyId])
+  @@map("study_code_files")
 }
 
 /// Seção de conteúdo de um estudo (card com título + Markdown, ex.: código).
@@ -258,6 +277,7 @@ model Project {
   diary        DiaryEntry[]
   ideas        Idea[]
   architecture ProjectArchitecture?
+  studies      Study[] // estudos que vinculam este projeto (n-n)
 
   workspaceId String
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)

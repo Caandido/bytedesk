@@ -10,6 +10,8 @@ import type {
   UpdateObjectiveInput,
   CreateSectionInput,
   UpdateSectionInput,
+  CreateCodeFileInput,
+  UpdateCodeFileInput,
 } from '@devflow/shared';
 import { studiesApi } from './studies.api';
 
@@ -126,6 +128,59 @@ export function useDeleteSection(studyId: string) {
   return useMutation({
     mutationFn: (sectionId: string) =>
       studiesApi.removeSection(studyId, sectionId),
+    onSuccess: () => invalidateStudy(qc, studyId),
+  });
+}
+
+// ─── Arquivos de código ──────────────────────────────────────────────────────
+
+export function useAddCodeFile(studyId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: CreateCodeFileInput) =>
+      studiesApi.addCodeFile(studyId, input),
+    onSuccess: () => invalidateStudy(qc, studyId),
+  });
+}
+
+export function useUpdateCodeFile(studyId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      fileId,
+      input,
+    }: {
+      fileId: string;
+      input: UpdateCodeFileInput;
+    }) => studiesApi.updateCodeFile(studyId, fileId, input),
+    onSuccess: () => invalidateStudy(qc, studyId),
+  });
+}
+
+export function useDeleteCodeFile(studyId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (fileId: string) => studiesApi.removeCodeFile(studyId, fileId),
+    onSuccess: () => invalidateStudy(qc, studyId),
+  });
+}
+
+// ─── Projetos vinculados ─────────────────────────────────────────────────────
+
+export function useLinkProject(studyId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (projectId: string) =>
+      studiesApi.linkProject(studyId, projectId),
+    onSuccess: () => invalidateStudy(qc, studyId),
+  });
+}
+
+export function useUnlinkProject(studyId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (projectId: string) =>
+      studiesApi.unlinkProject(studyId, projectId),
     onSuccess: () => invalidateStudy(qc, studyId),
   });
 }
