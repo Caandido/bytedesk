@@ -1,4 +1,5 @@
-import { Search, Menu } from 'lucide-react';
+import { Search, Menu, Columns2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { useUIStore } from '@/stores/ui';
 import { PomodoroWidget } from '@/features/pomodoro/PomodoroWidget';
 import { ThemeToggle } from '@/features/theme/ThemeToggle';
@@ -8,6 +9,8 @@ import { WorkspaceMenu } from '@/features/auth/WorkspaceMenu';
 export function Topbar() {
   const setCommandOpen = useUIStore((s) => s.setCommandOpen);
   const setMobileNavOpen = useUIStore((s) => s.setMobileNavOpen);
+  const splitView = useUIStore((s) => s.splitView);
+  const toggleSplitView = useUIStore((s) => s.toggleSplitView);
 
   return (
     <header className="flex h-14 items-center gap-2 border-b border-border bg-background px-3 sm:gap-4 sm:px-4">
@@ -38,6 +41,22 @@ export function Topbar() {
         <div className="hidden sm:block">
           <PomodoroWidget />
         </div>
+        {/* Tela dividida — só faz sentido no desktop (largura). */}
+        <button
+          type="button"
+          onClick={toggleSplitView}
+          aria-label="Dividir a tela"
+          aria-pressed={splitView}
+          title={splitView ? 'Fechar tela dividida' : 'Dividir a tela'}
+          className={cn(
+            'hidden size-9 items-center justify-center rounded-md border border-border transition-colors md:flex',
+            splitView
+              ? 'bg-accent text-foreground'
+              : 'text-muted-foreground hover:bg-accent hover:text-foreground',
+          )}
+        >
+          <Columns2 className="size-4" />
+        </button>
         <ThemeToggle />
         <WorkspaceMenu />
       </div>

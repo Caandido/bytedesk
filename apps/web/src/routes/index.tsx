@@ -1,5 +1,5 @@
 import { lazy } from 'react';
-import { createBrowserRouter } from 'react-router-dom';
+import { createBrowserRouter, type RouteObject } from 'react-router-dom';
 import { AppLayout } from '@/layouts/AppLayout';
 import { RequireAuth } from '@/features/auth/RequireAuth';
 import { LoginPage } from '@/pages/LoginPage';
@@ -126,53 +126,55 @@ const MembersPage = lazy(() =>
   import('@/pages/MembersPage').then((m) => ({ default: m.MembersPage })),
 );
 
+/**
+ * Rotas internas do app (filhas do AppLayout). Extraídas para poder ser
+ * reaproveitadas no painel secundário da tela dividida (via `useRoutes`).
+ */
+export const appRoutes: RouteObject[] = [
+  { index: true, element: <DashboardPage /> },
+  { path: 'favoritos', element: <FavoritosPage /> },
+  { path: 'estudos', element: <StudiesPage /> },
+  { path: 'estudos/novo', element: <StudyFormPage /> },
+  { path: 'estudos/:id', element: <StudyDetailPage /> },
+  { path: 'estudos/:id/editar', element: <StudyFormPage /> },
+  { path: 'projetos', element: <ProjectsPage /> },
+  { path: 'projetos/novo', element: <ProjectFormPage /> },
+  { path: 'projetos/:id/editar', element: <ProjectFormPage /> },
+  {
+    path: 'projetos/:id',
+    element: <ProjectLayout />,
+    children: [
+      { index: true, element: <ProjectOverviewPage /> },
+      { path: 'tarefas', element: <ProjectTasksPage /> },
+      { path: 'bugs', element: <ProjectBugsPage /> },
+      { path: 'ideias', element: <ProjectIdeasPage /> },
+      { path: 'versoes', element: <ProjectVersionsPage /> },
+      { path: 'arquitetura', element: <ProjectArchitecturePage /> },
+      { path: 'docs', element: <ProjectDocsPage /> },
+    ],
+  },
+  { path: 'roadmaps', element: <RoadmapsPage /> },
+  { path: 'roadmaps/novo', element: <RoadmapFormPage /> },
+  { path: 'roadmaps/guia/:id', element: <RoadmapGuidePage /> },
+  { path: 'roadmaps/:id', element: <RoadmapDetailPage /> },
+  { path: 'roadmaps/:id/editar', element: <RoadmapFormPage /> },
+  { path: 'conhecimento', element: <ConhecimentoPage /> },
+  { path: 'erros', element: <ErrosPage /> },
+  { path: 'diario', element: <DiarioPage /> },
+  { path: 'calendario', element: <CalendarioPage /> },
+  { path: 'estatisticas', element: <EstatisticasPage /> },
+  { path: 'git', element: <GitPage /> },
+  { path: 'membros', element: <MembersPage /> },
+  { path: '*', element: <NotFoundPage /> },
+];
+
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
   { path: '/register', element: <RegisterPage /> },
   {
     element: <RequireAuth />,
     children: [
-      {
-        path: '/',
-        element: <AppLayout />,
-        children: [
-      { index: true, element: <DashboardPage /> },
-      { path: 'favoritos', element: <FavoritosPage /> },
-      { path: 'estudos', element: <StudiesPage /> },
-      { path: 'estudos/novo', element: <StudyFormPage /> },
-      { path: 'estudos/:id', element: <StudyDetailPage /> },
-      { path: 'estudos/:id/editar', element: <StudyFormPage /> },
-      { path: 'projetos', element: <ProjectsPage /> },
-      { path: 'projetos/novo', element: <ProjectFormPage /> },
-      { path: 'projetos/:id/editar', element: <ProjectFormPage /> },
-      {
-        path: 'projetos/:id',
-        element: <ProjectLayout />,
-        children: [
-          { index: true, element: <ProjectOverviewPage /> },
-          { path: 'tarefas', element: <ProjectTasksPage /> },
-          { path: 'bugs', element: <ProjectBugsPage /> },
-          { path: 'ideias', element: <ProjectIdeasPage /> },
-          { path: 'versoes', element: <ProjectVersionsPage /> },
-          { path: 'arquitetura', element: <ProjectArchitecturePage /> },
-          { path: 'docs', element: <ProjectDocsPage /> },
-        ],
-      },
-      { path: 'roadmaps', element: <RoadmapsPage /> },
-      { path: 'roadmaps/novo', element: <RoadmapFormPage /> },
-      { path: 'roadmaps/guia/:id', element: <RoadmapGuidePage /> },
-      { path: 'roadmaps/:id', element: <RoadmapDetailPage /> },
-      { path: 'roadmaps/:id/editar', element: <RoadmapFormPage /> },
-      { path: 'conhecimento', element: <ConhecimentoPage /> },
-      { path: 'erros', element: <ErrosPage /> },
-      { path: 'diario', element: <DiarioPage /> },
-      { path: 'calendario', element: <CalendarioPage /> },
-      { path: 'estatisticas', element: <EstatisticasPage /> },
-      { path: 'git', element: <GitPage /> },
-      { path: 'membros', element: <MembersPage /> },
-      { path: '*', element: <NotFoundPage /> },
-        ],
-      },
+      { path: '/', element: <AppLayout />, children: appRoutes },
       { path: '/convite/:token', element: <AcceptInvitePage /> },
     ],
   },
