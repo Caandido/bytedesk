@@ -125,6 +125,34 @@ export function useRevokeInvite() {
   });
 }
 
+export function useApiTokens() {
+  const ws = useAuthStore((s) => s.activeWorkspaceId) ?? 'none';
+  return useQuery({
+    queryKey: ['team', ws, 'tokens'],
+    queryFn: teamApi.listTokens,
+  });
+}
+
+export function useCreateApiToken() {
+  const qc = useQueryClient();
+  const ws = useAuthStore((s) => s.activeWorkspaceId) ?? 'none';
+  return useMutation({
+    mutationFn: (name: string) => teamApi.createToken(name),
+    onSuccess: () =>
+      qc.invalidateQueries({ queryKey: ['team', ws, 'tokens'] }),
+  });
+}
+
+export function useRevokeApiToken() {
+  const qc = useQueryClient();
+  const ws = useAuthStore((s) => s.activeWorkspaceId) ?? 'none';
+  return useMutation({
+    mutationFn: (id: string) => teamApi.revokeToken(id),
+    onSuccess: () =>
+      qc.invalidateQueries({ queryKey: ['team', ws, 'tokens'] }),
+  });
+}
+
 export function useInvitePreview(token: string | undefined) {
   return useQuery({
     queryKey: ['invite-preview', token],

@@ -7,6 +7,8 @@ import type {
   UpdateMemberInput,
   Workspace,
   WorkspaceMember,
+  ApiToken,
+  ApiTokenCreated,
 } from '@devflow/shared';
 
 /** Chamadas à API de times (workspace ativo via header x-workspace-id). */
@@ -50,4 +52,13 @@ export const teamApi = {
     apiFetch<InvitePreview>(`/invites/${token}`),
   acceptInvite: (token: string) =>
     apiFetch<Workspace>(`/invites/${token}/accept`, { method: 'POST' }),
+
+  listTokens: () => apiFetch<ApiToken[]>('/tokens'),
+  createToken: (name: string) =>
+    apiFetch<ApiTokenCreated>('/tokens', {
+      method: 'POST',
+      body: JSON.stringify({ name }),
+    }),
+  revokeToken: (id: string) =>
+    apiFetch<void>(`/tokens/${id}`, { method: 'DELETE' }),
 };

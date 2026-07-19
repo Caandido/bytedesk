@@ -1,27 +1,16 @@
 import * as vscode from 'vscode';
 
 const TOKEN_KEY = 'bytedesk.token';
-const WS_KEY = 'bytedesk.workspaceId';
 
-export interface Workspace {
-  id: string;
-  name: string;
-  role: string;
-}
-export interface AuthResponse {
-  token: string;
-  user: { name: string; email: string };
-  workspaces: Workspace[];
-  activeWorkspaceId: string;
-}
-export interface Session {
-  user: { name: string; email: string };
-  workspaces: Workspace[];
-}
 export interface CodeFile {
   id: string;
   name: string;
   language: string;
+  content: string;
+}
+export interface Section {
+  id: string;
+  title: string;
   content: string;
 }
 export interface Study {
@@ -29,7 +18,9 @@ export interface Study {
   name: string;
   technology: string;
   status: string;
+  notes?: string;
   codeFiles?: CodeFile[];
+  sections?: Section[];
 }
 
 /** URL base da API (configurável). */
@@ -56,7 +47,11 @@ function extractMessage(body: string): string {
   return body;
 }
 
-/** Cliente da API do ByteDesk. Token no SecretStorage; workspace no globalState. */
+/**
+ * Cliente da API do ByteDesk. Autentica por **token de API** (`bd_...`) guardado
+ * no SecretStorage — o token já embute o workspace, então não precisa do header
+ * de workspace nem de login por senha.
+ */
 export class Api {
   constructor(private readonly ctx: vscode.ExtensionContext) {}
 
@@ -67,24 +62,14 @@ export class Api {
     if (token) await this.ctx.secrets.store(TOKEN_KEY, token);
     else await this.ctx.secrets.delete(TOKEN_KEY);
   }
-  workspaceId(): string | undefined {
-    return this.ctx.globalState.get<string>(WS_KEY);
-  }
-  async setWorkspaceId(id: string | undefined): Promise<void> {
-    await this.ctx.globalState.update(WS_KEY, id);
-  }
 
   private async request<T>(
     path: string,
-    options: { method?: string; body?: unknown; auth?: boolean } = {},
+    options: { method?: string; body?: unknown } = {},
   ): Promise<T> {
+    const token = await this.token();
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-    if (options.auth !== false) {
-      const token = await this.token();
-      if (token) headers['Authorization'] = `Bearer ${token}`;
-      const ws = this.workspaceId();
-      if (ws) headers['x-workspace-id'] = ws;
-    }
+    if (token) headers['Authorization'] = `Bearer ${token}`;
     const res = await fetch(apiUrl() + path, {
       method: options.method ?? 'GET',
       headers,
@@ -92,28 +77,20 @@ export class Api {
     });
     if (res.status === 401) {
       await this.setToken(undefined);
-      throw new Error('Sessão expirada. Entre novamente (ByteDesk: Entrar).');
+      throw new Error('Token inválido ou revogado. Entre novamente.');
     }
     if (!res.ok) {
-      const txt = await res.text();
-      throw new Error(extractMessage(txt) || res.statusText);
+      throw new Error(extractMessage(await res.text()) || res.statusText);
     }
     if (res.status === 204) return undefined as T;
     return (await res.json()) as T;
   }
 
-  login(email: string, password: string): Promise<AuthResponse> {
-    return this.request<AuthResponse>('/auth/login', {
-      method: 'POST',
-      body: { email, password },
-      auth: false,
-    });
-  }
-  me(): Promise<Session> {
-    return this.request<Session>('/auth/me');
-  }
   studies(): Promise<Study[]> {
     return this.request<Study[]>('/studies');
+  }
+  study(id: string): Promise<Study> {
+    return this.request<Study>(`/studies/${id}`);
   }
   createStudy(name: string): Promise<Study> {
     return this.request<Study>('/studies', { method: 'POST', body: { name } });
@@ -127,6 +104,12 @@ export class Api {
     return this.request<CodeFile>(`/studies/${studyId}/code`, {
       method: 'POST',
       body: { name, language, content },
+    });
+  }
+  addSection(studyId: string, title: string, content: string): Promise<Section> {
+    return this.request<Section>(`/studies/${studyId}/sections`, {
+      method: 'POST',
+      body: { title, content },
     });
   }
 }

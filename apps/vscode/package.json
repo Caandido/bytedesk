@@ -29,13 +29,14 @@
       "bytedesk": [{ "id": "bytedesk.studies", "name": "Estudos" }]
     },
     "commands": [
-      { "command": "bytedesk.login", "title": "ByteDesk: Entrar" },
+      { "command": "bytedesk.login", "title": "ByteDesk: Entrar (token de API)" },
       { "command": "bytedesk.logout", "title": "ByteDesk: Sair" },
-      { "command": "bytedesk.selectWorkspace", "title": "ByteDesk: Escolher workspace" },
       {
         "command": "bytedesk.saveSelection",
         "title": "ByteDesk: Salvar seleção como código no estudo"
       },
+      { "command": "bytedesk.quickNote", "title": "ByteDesk: Nova anotação rápida" },
+      { "command": "bytedesk.viewStudy", "title": "ByteDesk: Ver estudo no painel", "icon": "$(open-preview)" },
       { "command": "bytedesk.newStudy", "title": "ByteDesk: Novo estudo", "icon": "$(add)" },
       { "command": "bytedesk.refresh", "title": "ByteDesk: Atualizar", "icon": "$(refresh)" },
       { "command": "bytedesk.openStudy", "title": "ByteDesk: Abrir estudo no site", "icon": "$(link-external)" }
@@ -46,6 +47,10 @@
           "command": "bytedesk.saveSelection",
           "when": "editorHasSelection",
           "group": "bytedesk@1"
+        },
+        {
+          "command": "bytedesk.quickNote",
+          "group": "bytedesk@2"
         }
       ],
       "view/title": [
@@ -54,9 +59,14 @@
       ],
       "view/item/context": [
         {
+          "command": "bytedesk.viewStudy",
+          "when": "view == bytedesk.studies && viewItem == study",
+          "group": "inline@1"
+        },
+        {
           "command": "bytedesk.openStudy",
           "when": "view == bytedesk.studies && viewItem == study",
-          "group": "inline"
+          "group": "inline@2"
         }
       ]
     },

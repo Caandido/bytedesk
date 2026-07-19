@@ -34,7 +34,6 @@ export function WorkspaceMenu() {
 
   const leaveWorkspace = useLeaveWorkspace();
   const active = workspaces.find((w) => w.id === activeWorkspaceId);
-  const canManage = active?.role === 'OWNER' || active?.role === 'ADMIN';
   const canLeave = Boolean(active) && active?.role !== 'OWNER';
 
   return (
@@ -117,20 +116,18 @@ export function WorkspaceMenu() {
                 <Plus className="size-4" />
                 Criar workspace
               </button>
-              {canManage && (
-                <button
-                  type="button"
-                  role="menuitem"
-                  onClick={() => {
-                    setOpen(false);
-                    navigate('/membros');
-                  }}
-                  className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors hover:bg-accent"
-                >
-                  <Users className="size-4" />
-                  Gerenciar membros
-                </button>
-              )}
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  setOpen(false);
+                  navigate('/membros');
+                }}
+                className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors hover:bg-accent"
+              >
+                <Users className="size-4" />
+                Membros e tokens
+              </button>
               {canLeave && (
                 <button
                   type="button"

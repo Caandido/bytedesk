@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { WorkspacesModule } from './modules/workspaces/workspaces.module';
+import { TokensModule } from './modules/tokens/tokens.module';
 import { HealthModule } from './modules/health/health.module';
 import { NotesModule } from './modules/notes/notes.module';
 import { StudiesModule } from './modules/studies/studies.module';
@@ -29,6 +30,7 @@ import { CalendarModule } from './modules/calendar/calendar.module';
     PrismaModule,
     AuthModule,
     WorkspacesModule,
+    TokensModule,
     HealthModule,
     NotesModule,
     StudiesModule,

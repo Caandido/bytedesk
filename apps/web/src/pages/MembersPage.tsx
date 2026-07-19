@@ -35,6 +35,7 @@ import {
   useLeaveWorkspace,
   useTransferOwnership,
 } from '@/features/team/useTeam';
+import { ApiTokensCard } from '@/features/team/ApiTokensCard';
 
 const ROLE_LABEL: Record<MembershipRole, string> = {
   OWNER: 'Dono',
@@ -100,6 +101,8 @@ export function MembersPage() {
           ))}
         </CardContent>
       </Card>
+
+      <ApiTokensCard />
 
       <WorkspaceSettings isOwner={isOwner} name={active?.name ?? ''} />
     </div>

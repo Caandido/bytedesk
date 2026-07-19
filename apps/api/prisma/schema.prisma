@@ -41,6 +41,7 @@ model User {
   ownedWorkspaces Workspace[] // workspaces em que é dono (Workspace.owner)
   favorites       Favorite[]
   sentInvites     Invite[] // convites que este usuário enviou
+  apiTokens       ApiToken[] // tokens de API (ex.: extensão do VSCode)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -59,6 +60,7 @@ model Workspace {
 
   memberships Membership[]
   invites     Invite[]
+  apiTokens   ApiToken[]
 
   // Dados isolados por workspace (entidades-raiz de cada módulo).
   notes        Note[]
@@ -112,6 +114,24 @@ model Invite {
   @@index([workspaceId])
   @@index([token])
   @@map("invites")
+}
+
+/// Token de API pessoal (ex.: extensão do VSCode). Guarda apenas o hash; o token
+/// embute o workspace, então autentica e escopa sem o header x-workspace-id.
+model ApiToken {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  name        String    @default("")
+  tokenHash   String    @unique
+  lastUsedAt  DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([userId])
+  @@index([workspaceId])
+  @@map("api_tokens")
 }
 
 model Note {
