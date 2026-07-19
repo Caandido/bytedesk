@@ -9,6 +9,7 @@ import { Select } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { useRoadmaps, useDeleteRoadmap } from '@/features/roadmaps/useRoadmaps';
 import { ImportRoadmapDialog } from '@/features/roadmaps/ImportRoadmapDialog';
+import { OpenInSideButton } from '@/features/split/OpenInSideButton';
 
 type SortKey = 'recent' | 'name' | 'progress';
 
@@ -210,16 +211,19 @@ function RoadmapCard({
                 </p>
               )}
             </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="-mr-2 -mt-2 size-8 shrink-0"
-              aria-label={`Excluir ${roadmap.name}`}
-              onClick={(e) => onDelete(e, roadmap)}
-              disabled={deleting}
-            >
-              <Trash2 className="size-4 text-danger" />
-            </Button>
+            <div className="-mr-2 -mt-1 flex shrink-0 items-start gap-0.5">
+              <OpenInSideButton to={`/roadmaps/${roadmap.id}`} />
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-8"
+                aria-label={`Excluir ${roadmap.name}`}
+                onClick={(e) => onDelete(e, roadmap)}
+                disabled={deleting}
+              >
+                <Trash2 className="size-4 text-danger" />
+              </Button>
+            </div>
           </div>
 
           {roadmap.tags.length > 0 && (

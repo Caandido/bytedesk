@@ -23,6 +23,7 @@ import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { StudyStatusBadge, StudyLevelBadge } from '@/features/studies/StudyMeta';
+import { OpenInSideButton } from '@/features/split/OpenInSideButton';
 import { useStudies, useDeleteStudy } from '@/features/studies/useStudies';
 
 type StatusFilter = StudyStatus | 'ALL';
@@ -198,16 +199,19 @@ function StudyCard({
         <CardContent className="flex h-full flex-col gap-3 p-4">
           <div className="flex items-start justify-between gap-2">
             <h3 className="font-semibold leading-tight">{study.name}</h3>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="-mr-2 -mt-2 size-8 shrink-0"
-              aria-label={`Excluir ${study.name}`}
-              onClick={(e) => onDelete(e, study)}
-              disabled={deleting}
-            >
-              <Trash2 className="size-4 text-danger" />
-            </Button>
+            <div className="-mr-2 -mt-1 flex shrink-0 items-start gap-0.5">
+              <OpenInSideButton to={`/estudos/${study.id}`} />
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-8"
+                aria-label={`Excluir ${study.name}`}
+                onClick={(e) => onDelete(e, study)}
+                disabled={deleting}
+              >
+                <Trash2 className="size-4 text-danger" />
+              </Button>
+            </div>
           </div>
 
           <div className="flex flex-wrap gap-1.5">

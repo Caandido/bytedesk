@@ -1,4 +1,4 @@
-import { Suspense } from 'react';
+import { Suspense, useEffect } from 'react';
 import {
   MemoryRouter,
   useRoutes,
@@ -8,6 +8,7 @@ import {
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { appRoutes } from '@/routes';
 import { navItems } from '@/app/navigation';
+import { useUIStore } from '@/stores/ui';
 import { Select } from '@/components/ui/select';
 import { PageLoader } from '@/components/PageLoader';
 
@@ -25,6 +26,7 @@ export function SecondaryPane({
 }) {
   return (
     <MemoryRouter initialEntries={[initialPath || '/']}>
+      <SideNavBridge />
       <div className="flex h-full flex-col">
         <SecondaryNav onClose={onClose} />
         <div className="flex-1 overflow-y-auto p-4">
@@ -39,6 +41,19 @@ export function SecondaryPane({
 
 function SecondaryRoutes() {
   return useRoutes(appRoutes);
+}
+
+/** Navega o painel secundário quando o app pede "abrir ao lado" (openInSidePanel). */
+function SideNavBridge() {
+  const navigate = useNavigate();
+  const target = useUIStore((s) => s.sidePanelTarget);
+  const nonce = useUIStore((s) => s.sidePanelNonce);
+  useEffect(() => {
+    if (target) navigate(target);
+    // Reage a cada pedido (nonce); o alvo em si é lido no momento da navegação.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nonce]);
+  return null;
 }
 
 function SecondaryNav({ onClose }: { onClose: () => void }) {

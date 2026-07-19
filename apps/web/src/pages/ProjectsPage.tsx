@@ -27,6 +27,7 @@ import {
   ProjectPriorityBadge,
 } from '@/features/projects/ProjectMeta';
 import { useProjects, useDeleteProject } from '@/features/projects/useProjects';
+import { OpenInSideButton } from '@/features/split/OpenInSideButton';
 
 type StatusFilter = ProjectStatus | 'ALL';
 type PriorityFilter = ProjectPriority | 'ALL';
@@ -209,16 +210,19 @@ function ProjectCard({
                 </p>
               )}
             </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="-mr-2 -mt-2 size-8 shrink-0"
-              aria-label={`Excluir ${project.name}`}
-              onClick={(e) => onDelete(e, project)}
-              disabled={deleting}
-            >
-              <Trash2 className="size-4 text-danger" />
-            </Button>
+            <div className="-mr-2 -mt-1 flex shrink-0 items-start gap-0.5">
+              <OpenInSideButton to={`/projetos/${project.id}`} />
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-8"
+                aria-label={`Excluir ${project.name}`}
+                onClick={(e) => onDelete(e, project)}
+                disabled={deleting}
+              >
+                <Trash2 className="size-4 text-danger" />
+              </Button>
+            </div>
           </div>
 
           <div className="flex flex-wrap gap-1.5">

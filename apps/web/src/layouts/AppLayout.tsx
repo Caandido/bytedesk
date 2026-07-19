@@ -1,4 +1,4 @@
-import { Suspense } from 'react';
+import { Suspense, useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Sidebar } from '@/components/layout/Sidebar';
@@ -12,6 +12,19 @@ import { useUIStore } from '@/stores/ui';
 export function AppLayout() {
   const location = useLocation();
   const splitView = useUIStore((s) => s.splitView);
+  const toggleSplitView = useUIStore((s) => s.toggleSplitView);
+
+  // Atalho Ctrl+\ (ou ⌘\) para dividir/fechar a tela.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === '\\') {
+        e.preventDefault();
+        toggleSplitView();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [toggleSplitView]);
 
   const primary = (
     <Suspense fallback={<PageLoader />}>

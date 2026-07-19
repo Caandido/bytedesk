@@ -14,6 +14,8 @@ export function SplitLayout({
   primaryPath: string;
 }) {
   const setSplitView = useUIStore((s) => s.setSplitView);
+  // Se o painel foi aberto via "abrir ao lado", começa já na rota pedida.
+  const initialPath = useUIStore.getState().sidePanelTarget ?? primaryPath;
   const containerRef = useRef<HTMLDivElement>(null);
   const dragging = useRef(false);
   const [leftPct, setLeftPct] = useState(50);
@@ -59,7 +61,7 @@ export function SplitLayout({
 
       <div className="h-full min-w-0 flex-1 border-l border-border">
         <SecondaryPane
-          initialPath={primaryPath}
+          initialPath={initialPath}
           onClose={() => setSplitView(false)}
         />
       </div>
