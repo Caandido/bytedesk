@@ -1,9 +1,13 @@
-import { Suspense, useEffect } from 'react';
+import { Suspense, useEffect, type ReactNode } from 'react';
 import {
   MemoryRouter,
   useRoutes,
   useNavigate,
   useLocation,
+  UNSAFE_LocationContext,
+  UNSAFE_RouteContext,
+  UNSAFE_DataRouterContext,
+  UNSAFE_DataRouterStateContext,
 } from 'react-router-dom';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { appRoutes } from '@/routes';
@@ -25,17 +29,49 @@ export function SecondaryPane({
   onClose: () => void;
 }) {
   return (
-    <MemoryRouter initialEntries={[initialPath || '/']}>
-      <SideNavBridge />
-      <div className="flex h-full flex-col">
-        <SecondaryNav onClose={onClose} />
-        <div className="flex-1 overflow-y-auto p-4">
-          <Suspense fallback={<PageLoader />}>
-            <SecondaryRoutes />
-          </Suspense>
+    <IsolatedRouterContext>
+      <MemoryRouter initialEntries={[initialPath || '/']}>
+        <SideNavBridge />
+        <div className="flex h-full flex-col">
+          <SecondaryNav onClose={onClose} />
+          <div className="flex-1 overflow-y-auto p-4">
+            <Suspense fallback={<PageLoader />}>
+              <SecondaryRoutes />
+            </Suspense>
+          </div>
         </div>
-      </div>
-    </MemoryRouter>
+      </MemoryRouter>
+    </IsolatedRouterContext>
+  );
+}
+
+/**
+ * Reseta os contextos internos do React Router para os valores-padrão, permitindo
+ * montar um `<Router>` (o `MemoryRouter` deste painel) isolado **dentro** do
+ * `RouterProvider` principal do app.
+ *
+ * Sem isto o React Router lança "You cannot render a <Router> inside another
+ * <Router>": o componente `Router` faz `invariant(!useInRouterContext())`, e
+ * `useInRouterContext()` retorna `LocationContext != null`. Zerar `LocationContext`
+ * satisfaz o invariante; zerar `RouteContext` e os contextos do data-router
+ * (populados pelo `RouterProvider` externo) garante que o painel se comporte como
+ * um roteador de topo — matching absoluto e navegação próprios, sem herdar o
+ * estado do roteador principal.
+ */
+function IsolatedRouterContext({ children }: { children: ReactNode }) {
+  return (
+    <UNSAFE_DataRouterContext.Provider value={null}>
+      <UNSAFE_DataRouterStateContext.Provider value={null}>
+        <UNSAFE_RouteContext.Provider
+          value={{ outlet: null, matches: [], isDataRoute: false }}
+        >
+          {/* Default real do LocationContext é `null`; o cast satisfaz o tipo. */}
+          <UNSAFE_LocationContext.Provider value={null as never}>
+            {children}
+          </UNSAFE_LocationContext.Provider>
+        </UNSAFE_RouteContext.Provider>
+      </UNSAFE_DataRouterStateContext.Provider>
+    </UNSAFE_DataRouterContext.Provider>
   );
 }
 
