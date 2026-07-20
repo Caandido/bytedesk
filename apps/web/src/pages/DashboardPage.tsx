@@ -9,6 +9,9 @@ import {
   BookOpen,
   Loader2,
   ArrowRight,
+  CheckCircle2,
+  ShieldCheck,
+  Award,
   type LucideIcon,
 } from 'lucide-react';
 import type { DashboardData } from '@devflow/shared';
@@ -106,6 +109,27 @@ export function DashboardPage() {
           label="Conhecimento"
           hint={`${d.wiki.favorites} favoritas`}
         />
+        <StatCard
+          icon={Award}
+          value={d.studies.completed}
+          label="Estudos concluídos"
+          hint={`${d.studies.total} no total`}
+          success
+        />
+        <StatCard
+          icon={CheckCircle2}
+          value={d.tasks.done}
+          label="Tarefas concluídas"
+          hint={`${d.tasks.total} no total`}
+          success
+        />
+        <StatCard
+          icon={ShieldCheck}
+          value={d.bugs.resolved}
+          label="Bugs resolvidos"
+          hint={`${d.bugs.total} no total`}
+          success
+        />
       </div>
 
       {/* Frequência de atividade (estilo GitHub) */}
@@ -129,12 +153,14 @@ function StatCard({
   label,
   hint,
   danger,
+  success,
 }: {
   icon: LucideIcon;
   value: number | string;
   label: string;
   hint?: string;
   danger?: boolean;
+  success?: boolean;
 }) {
   return (
     <Card className="hover-lift hover:border-foreground/20 hover:shadow-md">
@@ -142,9 +168,9 @@ function StatCard({
         <div
           className={cn(
             'flex size-9 items-center justify-center rounded-lg border',
-            danger
-              ? 'border-danger/20 bg-danger/10 text-danger'
-              : 'border-border bg-muted text-foreground',
+            danger && 'border-danger/20 bg-danger/10 text-danger',
+            success && 'border-primary/20 bg-primary/10 text-primary',
+            !danger && !success && 'border-border bg-muted text-foreground',
           )}
         >
           <Icon className="size-5" />
