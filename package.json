@@ -1,6 +1,6 @@
 {
   "name": "devflow",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "private": true,
   "description": "ByteDesk — Programming Study & Project Manager",
   "workspaces": [
