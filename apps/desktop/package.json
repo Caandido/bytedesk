@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "description": "ByteDesk — app desktop (Windows/Linux)",
-  "author": "ByteDesk",
+  "homepage": "https://bytedesk-two.vercel.app",
+  "author": "ByteDesk <259936643+Caandido@users.noreply.github.com>",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
