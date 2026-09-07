@@ -2,12 +2,13 @@
   "name": "@bytedesk/desktop",
   "version": "1.0.0",
   "private": true,
-  "description": "ByteDesk — app desktop (Windows)",
+  "description": "ByteDesk — app desktop (Windows/Linux)",
   "author": "ByteDesk",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "dist": "electron-builder --win --publish never"
+    "dist": "electron-builder --win --publish never",
+    "dist:linux": "electron-builder --linux --publish never"
   },
   "build": {
     "appId": "com.bytedesk.app",
@@ -29,6 +30,21 @@
     },
     "portable": {
       "artifactName": "ByteDesk-${version}-portable.${ext}"
+    },
+    "linux": {
+      "target": ["AppImage", "rpm", "deb"],
+      "icon": "icon.png",
+      "category": "Development",
+      "synopsis": "Programming Study & Project Manager"
+    },
+    "rpm": {
+      "artifactName": "ByteDesk-${version}.${arch}.${ext}"
+    },
+    "deb": {
+      "artifactName": "ByteDesk-${version}.${arch}.${ext}"
+    },
+    "appImage": {
+      "artifactName": "ByteDesk-${version}-${arch}.${ext}"
     }
   },
   "devDependencies": {
